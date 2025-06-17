@@ -41,9 +41,15 @@ const Login = () => {
 
   return (
     <div
-      className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#f5f6fa] via-[#e9e9f3] to-[#f5f6fa] relative"
+      className="min-h-screen flex items-center justify-center relative"
+      style={{
+        backgroundImage: `url('/login-page-background.jpg')`, // Example ecommerce image
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+      }}
     >
-      <div className="absolute inset-0 bg-white/60 backdrop-blur-sm" />
+      {/* White overlay for readability */}
+      <div className="absolute inset-0 bg-white/70" />
       <div className="relative z-10 max-w-md w-full rounded-3xl shadow-2xl bg-white/80 backdrop-blur-lg border border-gray-200 p-10 flex flex-col items-center space-y-8">
         {/* Apple SVG Logo */}
         <span className="mb-2">

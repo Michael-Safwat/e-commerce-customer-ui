@@ -1,4 +1,3 @@
-
 import { Product } from '../types/product';
 
 export const categories = [
@@ -86,5 +85,200 @@ export const products: Product[] = [
     inStock: true,
     rating: 4.6,
     reviews: 123
+  },
+  {
+    id: '7',
+    name: 'Bluetooth Speaker',
+    price: 129,
+    originalPrice: 149,
+    image: 'https://images.unsplash.com/photo-1512446733611-9099a758e63c?w=400&h=400&fit=crop',
+    category: 'electronics',
+    description: 'Portable Bluetooth speaker with deep bass',
+    colors: ['Black', 'Blue', 'Red'],
+    inStock: true,
+    rating: 4.4,
+    reviews: 78
+  },
+  {
+    id: '8',
+    name: 'Yoga Mat',
+    price: 39,
+    image: 'https://images.unsplash.com/photo-1519864600265-abb23847ef2c?w=400&h=400&fit=crop',
+    category: 'sports',
+    description: 'Eco-friendly non-slip yoga mat',
+    colors: ['Purple', 'Green', 'Blue'],
+    inStock: true,
+    rating: 4.7,
+    reviews: 102
+  },
+  {
+    id: '9',
+    name: 'Leather Wallet',
+    price: 59,
+    image: 'https://images.unsplash.com/photo-1519125323398-675f0ddb6308?w=400&h=400&fit=crop',
+    category: 'accessories',
+    description: 'Classic genuine leather wallet',
+    colors: ['Brown', 'Black'],
+    inStock: true,
+    rating: 4.5,
+    reviews: 54
+  },
+  {
+    id: '10',
+    name: 'Desk Lamp',
+    price: 75,
+    image: 'https://images.unsplash.com/photo-1465101046530-73398c7f28ca?w=400&h=400&fit=crop',
+    category: 'home',
+    description: 'Adjustable LED desk lamp with touch control',
+    colors: ['White', 'Black'],
+    inStock: true,
+    rating: 4.6,
+    reviews: 61
+  },
+  {
+    id: '11',
+    name: 'Sports Water Bottle',
+    price: 25,
+    image: 'https://images.unsplash.com/photo-1503602642458-232111445657?w=400&h=400&fit=crop',
+    category: 'sports',
+    description: 'Stainless steel insulated water bottle',
+    colors: ['Blue', 'Red', 'Silver'],
+    inStock: true,
+    rating: 4.8,
+    reviews: 134
+  },
+  {
+    id: '12',
+    name: 'Scented Candle',
+    price: 35,
+    image: 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?w=400&h=400&fit=crop',
+    category: 'home',
+    description: 'Hand-poured soy wax scented candle',
+    colors: ['White'],
+    inStock: true,
+    rating: 4.9,
+    reviews: 89
+  },
+  {
+    id: '13',
+    name: 'Smart Fitness Tracker',
+    price: 99,
+    image: 'https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=400&h=400&fit=crop',
+    category: 'electronics',
+    description: 'Track your health and activity with this smart fitness tracker.',
+    colors: ['Black', 'Pink', 'Blue'],
+    inStock: true,
+    rating: 4.4,
+    reviews: 77
+  },
+  {
+    id: '14',
+    name: 'Classic Backpack',
+    price: 69,
+    image: 'https://images.unsplash.com/photo-1503342217505-b0a15ec3261c?w=400&h=400&fit=crop',
+    category: 'accessories',
+    description: 'Durable backpack for everyday use.',
+    colors: ['Black', 'Gray', 'Navy'],
+    inStock: true,
+    rating: 4.7,
+    reviews: 120
+  },
+  {
+    id: '15',
+    name: 'Cotton Bath Towel',
+    price: 25,
+    image: 'https://images.unsplash.com/photo-1515378791036-0648a3ef77b2?w=400&h=400&fit=crop',
+    category: 'home',
+    description: 'Soft and absorbent cotton bath towel.',
+    colors: ['White', 'Beige', 'Gray'],
+    inStock: true,
+    rating: 4.8,
+    reviews: 98
+  },
+  {
+    id: '16',
+    name: 'Wireless Mouse',
+    price: 49,
+    image: 'https://images.unsplash.com/photo-1517336714731-489689fd1ca8?w=400&h=400&fit=crop',
+    category: 'electronics',
+    description: 'Ergonomic wireless mouse with long battery life.',
+    colors: ['Black', 'White'],
+    inStock: true,
+    rating: 4.6,
+    reviews: 112
+  },
+  {
+    id: '17',
+    name: 'Travel Mug',
+    price: 29,
+    image: 'https://images.unsplash.com/photo-1464983953574-0892a716854b?w=400&h=400&fit=crop',
+    category: 'home',
+    description: 'Insulated travel mug keeps drinks hot or cold.',
+    colors: ['Silver', 'Black', 'Red'],
+    inStock: true,
+    rating: 4.5,
+    reviews: 87
+  },
+  {
+    id: '18',
+    name: 'Yoga Block',
+    price: 19,
+    image: 'https://images.unsplash.com/photo-1519864600265-abb23847ef2c?w=400&h=400&fit=crop',
+    category: 'sports',
+    description: 'Support your yoga practice with this sturdy block.',
+    colors: ['Purple', 'Blue', 'Gray'],
+    inStock: true,
+    rating: 4.7,
+    reviews: 65
+  },
+  {
+    id: '19',
+    name: 'Graphic Tee',
+    price: 39,
+    image: 'https://images.unsplash.com/photo-1512436991641-6745cdb1723f?w=400&h=400&fit=crop',
+    category: 'clothing',
+    description: 'Trendy graphic t-shirt made from organic cotton.',
+    colors: ['White', 'Black'],
+    sizes: ['S', 'M', 'L', 'XL'],
+    inStock: true,
+    rating: 4.4,
+    reviews: 53
+  },
+  {
+    id: '20',
+    name: 'Wireless Charger',
+    price: 59,
+    image: 'https://images.unsplash.com/photo-1519125323398-675f0ddb6308?w=400&h=400&fit=crop',
+    category: 'electronics',
+    description: 'Fast wireless charger for all compatible devices.',
+    colors: ['Black', 'White'],
+    inStock: true,
+    rating: 4.6,
+    reviews: 101
+  },
+  {
+    id: '21',
+    name: 'Sports Socks (3 Pack)',
+    price: 15,
+    image: 'https://images.unsplash.com/photo-1512436991641-6745cdb1723f?w=400&h=400&fit=crop',
+    category: 'clothing',
+    description: 'Comfortable and breathable sports socks.',
+    colors: ['White', 'Black', 'Gray'],
+    sizes: ['M', 'L', 'XL'],
+    inStock: true,
+    rating: 4.8,
+    reviews: 76
+  },
+  {
+    id: '22',
+    name: 'Desk Organizer',
+    price: 35,
+    image: 'https://images.unsplash.com/photo-1465101046530-73398c7f28ca?w=400&h=400&fit=crop',
+    category: 'home',
+    description: 'Keep your workspace tidy with this desk organizer.',
+    colors: ['Black', 'White'],
+    inStock: true,
+    rating: 4.7,
+    reviews: 59
   }
 ];

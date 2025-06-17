@@ -7,14 +7,7 @@ import AddressManager from '../components/AddressManager';
 import PasswordManager from '../components/PasswordManager';
 import BasicInfoManager from '../components/BasicInfoManager';
 import Orders from '../components/Orders';
-
-// Dummy components for Saved List
-const SavedList = () => (
-  <section className="bg-white rounded-2xl shadow-md p-6 space-y-4">
-    <h2 className="text-xl font-semibold text-gray-900">Saved List</h2>
-    <div className="text-gray-600">No saved items yet.</div>
-  </section>
-);
+import SavedList from '../components/SavedList';
 
 const Profile = () => {
   const { cart } = useCart();

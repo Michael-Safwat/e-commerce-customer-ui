@@ -1,4 +1,3 @@
-
 import { useState, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Star, Plus, Minus, ShoppingBag, Heart } from 'lucide-react';
@@ -8,16 +7,20 @@ import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import ProductCard from '../components/ProductCard';
 import ProductReviews from '../components/ProductReviews';
+import Header from '../components/Header';
+import Cart from '../components/Cart';
 import { toast } from '@/hooks/use-toast';
 
 const ProductDetails = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { addToCart } = useCart();
+  const { cart, addToCart } = useCart();
   
   const [selectedColor, setSelectedColor] = useState<string>('');
   const [selectedSize, setSelectedSize] = useState<string>('');
   const [quantity, setQuantity] = useState(1);
+  const [isCartOpen, setIsCartOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
 
   const product = products.find(p => p.id === id);
   
@@ -66,6 +69,26 @@ const ProductDetails = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
+      <Header 
+        onCartOpen={() => setIsCartOpen(true)}
+        cartItemCount={cart.itemCount}
+        searchQuery={searchQuery}
+        onSearchChange={setSearchQuery}
+      />
+
+      <Cart
+        isOpen={isCartOpen}
+        onClose={() => setIsCartOpen(false)}
+        items={cart.items}
+        total={cart.total}
+        onUpdateQuantity={(id, quantity, color, size) => {
+          // This will be handled by the cart hook
+        }}
+        onRemoveItem={(id, color, size) => {
+          // This will be handled by the cart hook
+        }}
+      />
+
       {/* Header */}
       <div className="bg-white border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">

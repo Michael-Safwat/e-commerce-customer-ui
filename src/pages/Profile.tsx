@@ -5,6 +5,7 @@ import { useCart } from '../hooks/useCart';
 import { useState } from 'react';
 import AddressManager from '../components/AddressManager';
 import PasswordManager from '../components/PasswordManager';
+import BasicInfoManager from '../components/BasicInfoManager';
 
 const Profile = () => {
   const { user } = useAuth();
@@ -44,21 +45,7 @@ const Profile = () => {
       <main className="flex-1">
         <div className="max-w-3xl mx-auto py-12 px-4 space-y-10">
           {/* Basic Info */}
-          <section className="bg-white rounded-2xl shadow-md p-6 space-y-4">
-            <h2 className="text-xl font-semibold text-gray-900">Basic Information</h2>
-            <div className="flex items-center gap-6">
-              <img
-                src={user?.profileImage || '/default-profile.png'}
-                alt="Profile"
-                className="w-20 h-20 rounded-full object-cover border"
-              />
-              <div>
-                <div className="text-lg font-medium">{user?.name || 'Your Name'}</div>
-                <div className="text-gray-600">{user?.email}</div>
-                <div className="text-gray-500 text-sm">Birthday: {user?.birthday || 'Not set'}</div>
-              </div>
-            </div>
-          </section>
+          <BasicInfoManager />
 
           {/* Addresses */}
           <AddressManager />

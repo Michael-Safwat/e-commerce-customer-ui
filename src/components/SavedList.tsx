@@ -38,7 +38,7 @@ const SavedList: React.FC = () => {
                 <span className="font-semibold">${item.price.toFixed(2)}</span>
                 <button
                   className="text-red-600 hover:text-red-800 p-1"
-                  onClick={() => handleRemove(item.id)}
+                  onClick={() => handleRemove(String(item.id))}
                   disabled={removingId === item.id}
                   title="Remove"
                 >

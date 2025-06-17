@@ -1,9 +1,11 @@
 import { Product } from '../types/product';
 
 export type SavedItem = {
-  id: string;
+  id: string | number;
   name: string;
   price: number;
+  image: string;
+  [key: string]: any;
 };
 
 let savedItems: SavedItem[] = [];
@@ -29,6 +31,7 @@ export async function addToSavedList(product: Product): Promise<void> {
       id: product.id,
       name: product.name,
       price: product.price,
+      image: product.image,
     });
   }
 }

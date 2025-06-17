@@ -1,5 +1,5 @@
 import { useCart } from '../hooks/useCart';
-import SavedList from '../components/SavedList';
+import CheckoutSavedList from '../components/CheckoutSavedList';
 import { useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
@@ -103,29 +103,7 @@ const Checkout = () => {
                 </section>
                 <section className="bg-white rounded-2xl shadow-md p-6 mb-6">
                   <h2 className="text-xl font-semibold mb-4">Saved List</h2>
-                  <div className="space-y-4">
-                    {savedItems.slice(0, 3).map(item => (
-                      <div key={item.id} className="flex items-center gap-4 border-b pb-4">
-                        <img src={item.image} alt={item.name} className="w-16 h-16 object-cover rounded-lg" />
-                        <div className="flex-1">
-                          <div className="font-semibold">{item.name}</div>
-                          <div className="text-sm text-gray-500">${item.price.toFixed(2)}</div>
-                        </div>
-                        <Button
-                          variant="outline"
-                          className="text-green-600 border-green-200 hover:bg-green-50"
-                          onClick={async () => {
-                            addToCart(item);
-                            await removeFromSavedList(item.id);
-                            // Refresh saved items list
-                            fetchSavedList().then(setSavedItems);
-                          }}
-                        >
-                          Add to cart
-                        </Button>
-                      </div>
-                    ))}
-                  </div>
+                  <CheckoutSavedList addToCart={addToCart} />
                 </section>
                 <Button
                   className="w-full bg-blue-600 text-white"

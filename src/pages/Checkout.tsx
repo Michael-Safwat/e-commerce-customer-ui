@@ -10,6 +10,7 @@ import { MapPin, CreditCard, DollarSign, CheckCircle } from 'lucide-react';
 import { toast } from '../hooks/use-toast';
 import CouponInput from '../components/CouponInput';
 import OrderSummary from '../components/OrderSummary';
+import CheckoutPaymentOptions from '../components/CheckoutPaymentOptions';
 
 const Checkout = () => {
   const { cart, addToCart, removeFromCart, updateQuantity } = useCart();
@@ -193,38 +194,11 @@ const Checkout = () => {
                 </div>
 
                 {/* Payment Section */}
-                <h2 className="text-xl font-semibold mb-4">Payment</h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-                  <div
-                    className={`border rounded-lg p-4 flex items-center gap-4 cursor-pointer transition ${
-                      selectedPayment === 1
-                        ? 'border-blue-600 bg-blue-50'
-                        : 'border-gray-200 bg-white'
-                    }`}
-                    onClick={() => setSelectedPayment(1)}
-                  >
-                    <CreditCard className="w-8 h-8 text-blue-600" />
-                    <div>
-                      <div className="font-semibold">Stripe</div>
-                      <div className="text-sm text-gray-500">Pay securely with your credit or debit card.</div>
-                    </div>
-                  </div>
-                  <div
-                    className={`border rounded-lg p-4 flex items-center gap-4 cursor-pointer transition ${
-                      selectedPayment === 2
-                        ? 'border-green-600 bg-green-50'
-                        : 'border-gray-200 bg-white'
-                    }`}
-                    onClick={() => setSelectedPayment(2)}
-                  >
-                    <DollarSign className="w-8 h-8 text-green-600" />
-                    <div>
-                      <div className="font-semibold">Cash on Delivery</div>
-                      <div className="text-sm text-gray-500">Pay with cash when your order arrives.</div>
-                    </div>
-                  </div>
-                </div>
-              
+                <CheckoutPaymentOptions
+                  selectedPayment={selectedPayment}
+                  setSelectedPayment={setSelectedPayment}
+                />
+
                 <Button
                   className="w-full bg-green-600 text-white flex items-center justify-center gap-2"
                   disabled={!selectedPayment || !selectedAddress}

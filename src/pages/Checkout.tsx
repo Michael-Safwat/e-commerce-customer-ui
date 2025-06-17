@@ -222,29 +222,7 @@ const Checkout = () => {
                     </div>
                   </div>
                 </div>
-                <div className="mb-6">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Coupon Code
-                  </label>
-                  <div className="flex gap-2">
-                    <input
-                      type="text"
-                      value={coupon}
-                      onChange={(e) => setCoupon(e.target.value)}
-                      className="flex-1 border rounded-lg p-2 focus:ring-2 focus:ring-blue-600 focus:outline-none"
-                      placeholder="Enter your coupon code"
-                    />
-                    <Button
-                      className="bg-blue-600 text-white"
-                      onClick={handleApplyCoupon}
-                    >
-                      Apply
-                    </Button>
-                  </div>
-                  {couponError && (
-                    <p className="text-red-600 text-sm mt-2">{couponError}</p>
-                  )}
-                </div>
+              
                 <Button
                   className="w-full bg-green-600 text-white flex items-center justify-center gap-2"
                   disabled={!selectedPayment || !selectedAddress}
@@ -262,42 +240,43 @@ const Checkout = () => {
               </section>
             )}
           </div>
-          {/* Right: Order Summary (only in step 2) */}
+          {/* Right: Order Summary and Coupon (only in step 2) */}
           {step === 2 && (
-            <div className="w-full max-w-xs bg-white rounded-2xl shadow-md p-6 h-fit self-start">
-              <h2 className="text-lg font-semibold mb-4">Order Summary</h2>
-              <div className="flex justify-between mb-2">
-                <span>Subtotal</span>
-                <span>${total.toFixed(2)}</span>
-              </div>
-              <div className="flex justify-between mb-2">
-                <span>Shipping</span>
-                <span>$0.00</span>
-              </div>
-              {discount > 0 && (
-                <div className="flex justify-between mb-2 text-green-600">
-                  <span>Discount</span>
-                  <span>- ${(total * discount).toFixed(2)}</span>
+            <div className="flex flex-col items-start w-full max-w-xs">
+              <div className="bg-white rounded-2xl shadow-md p-6 h-fit w-full">
+                <h2 className="text-lg font-semibold mb-4">Order Summary</h2>
+                <div className="flex justify-between mb-2">
+                  <span>Subtotal</span>
+                  <span>${total.toFixed(2)}</span>
                 </div>
-              )}
-              <div className="flex justify-between font-bold text-lg border-t pt-2">
-                <span>Total</span>
-                <span>${(total - total * discount).toFixed(2)}</span>
+                <div className="flex justify-between mb-2">
+                  <span>Shipping</span>
+                  <span>$0.00</span>
+                </div>
+                {discount > 0 && (
+                  <div className="flex justify-between mb-2 text-green-600">
+                    <span>Discount</span>
+                    <span>- ${(total * discount).toFixed(2)}</span>
+                  </div>
+                )}
+                <div className="flex justify-between font-bold text-lg border-t pt-2">
+                  <span>Total</span>
+                  <span>${(total - total * discount).toFixed(2)}</span>
+                </div>
               </div>
-              {/* Coupon Section */}
-              <div className="mt-6">
+              <div className="bg-white rounded-2xl shadow-md p-6 mt-4 w-full">
                 <label className="block font-semibold mb-2">Apply Coupon</label>
                 <div className="flex gap-2">
                   <input
                     type="text"
-                    className="border rounded px-2 py-1 flex-1"
+                    className="border rounded px-2 py-1 flex-1 min-w-0"
                     placeholder="Enter coupon code"
                     value={coupon}
                     onChange={e => setCoupon(e.target.value)}
                   />
                   <Button
                     type="button"
-                    className="bg-blue-600 text-white"
+                    className="bg-blue-600 text-white whitespace-nowrap"
                     onClick={handleApplyCoupon}
                   >
                     Apply

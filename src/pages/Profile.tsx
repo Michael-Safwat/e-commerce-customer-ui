@@ -4,6 +4,7 @@ import Footer from '../components/Footer';
 import { useCart } from '../hooks/useCart';
 import { useState } from 'react';
 import AddressManager from '../components/AddressManager';
+import PasswordManager from '../components/PasswordManager';
 
 const Profile = () => {
   const { user } = useAuth();
@@ -69,53 +70,7 @@ const Profile = () => {
           </section>
 
           {/* Change Password */}
-          <section className="bg-white rounded-2xl shadow-md p-6 space-y-4">
-            <h2 className="text-xl font-semibold text-gray-900">Change Password</h2>
-            <form className="space-y-4" onSubmit={handlePasswordUpdate}>
-              <div>
-                <label className="block text-gray-700 mb-1" htmlFor="currentPassword">Current Password</label>
-                <input
-                  id="currentPassword"
-                  type="password"
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2"
-                  value={currentPassword}
-                  onChange={(e) => setCurrentPassword(e.target.value)}
-                  required
-                />
-              </div>
-              <div>
-                <label className="block text-gray-700 mb-1" htmlFor="newPassword">New Password</label>
-                <input
-                  id="newPassword"
-                  type="password"
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2"
-                  value={newPassword}
-                  onChange={(e) => setNewPassword(e.target.value)}
-                  required
-                />
-              </div>
-              <div>
-                <label className="block text-gray-700 mb-1" htmlFor="confirmPassword">Confirm New Password</label>
-                <input
-                  id="confirmPassword"
-                  type="password"
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2"
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
-                  required
-                />
-              </div>
-              {passwordMessage && (
-                <div className="text-sm text-red-600">{passwordMessage}</div>
-              )}
-              <button
-                type="submit"
-                className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg py-2 transition"
-              >
-                Update Password
-              </button>
-            </form>
-          </section>
+          <PasswordManager />
         </div>
       </main>
 

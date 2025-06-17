@@ -1,8 +1,8 @@
-
-import { Star, Plus } from 'lucide-react';
+import { Star, Plus, Heart } from 'lucide-react';
 import { Product } from '../types/product';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
+import { addToSavedList } from '../services/savedListService';
 
 interface ProductCardProps {
   product: Product;
@@ -21,6 +21,12 @@ const ProductCard = ({ product, onAddToCart }: ProductCardProps) => {
     onAddToCart(product);
   };
 
+  const handleAddToSavedList = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    await addToSavedList(product);
+    // Optionally show a toast or update UI
+  };
+
   return (
     <div 
       className="group bg-white rounded-lg overflow-hidden hover:shadow-lg transition-all duration-300 cursor-pointer"
@@ -37,13 +43,23 @@ const ProductCard = ({ product, onAddToCart }: ProductCardProps) => {
             Sale
           </div>
         )}
-        <Button
-          size="icon"
-          className="absolute top-3 right-3 bg-white/80 hover:bg-white text-gray-900 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
-          onClick={handleAddToCart}
-        >
-          <Plus className="h-4 w-4" />
-        </Button>
+        <div className="absolute top-3 right-3 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+          <Button
+            size="icon"
+            className="bg-white/80 hover:bg-white text-gray-900"
+            onClick={handleAddToCart}
+          >
+            <Plus className="h-4 w-4" />
+          </Button>
+          <Button
+            size="icon"
+            className="bg-white/80 hover:bg-white text-gray-900"
+            onClick={handleAddToSavedList}
+            title="Save to list"
+          >
+            <Heart className="h-4 w-4" />
+          </Button>
+        </div>
       </div>
       
       <div className="p-4">

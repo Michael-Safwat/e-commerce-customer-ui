@@ -1,10 +1,13 @@
-
 import { useState, useEffect, createContext, useContext, ReactNode } from 'react';
 
 interface User {
   email: string;
   name?: string;
   isLoggedIn: boolean;
+  profileImage?: string; 
+  birthday?: string; // Optional field for user's birthday
+  addresses?: string[]; // Optional field for user's addresses
+  paymentMethods?: string[]; // Optional field for user's payment methods
 }
 
 interface AuthContextType {

@@ -1,4 +1,3 @@
-
 import { Search, ShoppingBag, User, LogOut } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -14,8 +13,8 @@ import { useAuth } from '../hooks/useAuth';
 interface HeaderProps {
   onCartOpen: () => void;
   cartItemCount: number;
-  searchQuery: string;
-  onSearchChange: (query: string) => void;
+  searchQuery?: string;
+  onSearchChange?: (query: string) => void;
 }
 
 const Header = ({ onCartOpen, cartItemCount, searchQuery, onSearchChange }: HeaderProps) => {
@@ -39,18 +38,20 @@ const Header = ({ onCartOpen, cartItemCount, searchQuery, onSearchChange }: Head
           </div>
 
           {/* Search Bar */}
-          <div className="flex-1 max-w-lg mx-8">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-              <Input
-                type="text"
-                placeholder="Search products..."
-                value={searchQuery}
-                onChange={(e) => onSearchChange(e.target.value)}
-                className="pl-10 pr-4 py-2 w-full border-gray-300 rounded-full focus:ring-2 focus:ring-gray-900 focus:border-transparent"
-              />
+          {typeof searchQuery === 'string' && typeof onSearchChange === 'function' && (
+            <div className="flex-1 max-w-lg mx-8">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+                <Input
+                  type="text"
+                  placeholder="Search products..."
+                  value={searchQuery}
+                  onChange={(e) => onSearchChange(e.target.value)}
+                  className="pl-10 pr-4 py-2 w-full border-gray-300 rounded-full focus:ring-2 focus:ring-gray-900 focus:border-transparent"
+                />
+              </div>
             </div>
-          </div>
+          )}
 
           {/* Right Section */}
           <div className="flex items-center space-x-4">
@@ -63,7 +64,10 @@ const Header = ({ onCartOpen, cartItemCount, searchQuery, onSearchChange }: Head
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
-                  <DropdownMenuItem className="flex items-center gap-2">
+                  <DropdownMenuItem
+                    className="flex items-center gap-2 cursor-pointer"
+                    onClick={() => navigate('/profile')}
+                  >
                     <User className="h-4 w-4" />
                     {user?.email}
                   </DropdownMenuItem>

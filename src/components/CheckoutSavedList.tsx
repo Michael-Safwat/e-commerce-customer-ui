@@ -4,14 +4,15 @@ import { fetchSavedList, removeFromSavedList, SavedItem } from '../services/save
 
 interface CheckoutSavedListProps {
   addToCart: (item: SavedItem) => void;
+  refreshKey?: number;
 }
 
-const CheckoutSavedList = ({ addToCart }: CheckoutSavedListProps) => {
+const CheckoutSavedList = ({ addToCart, refreshKey }: CheckoutSavedListProps) => {
   const [savedItems, setSavedItems] = useState<SavedItem[]>([]);
 
   useEffect(() => {
     fetchSavedList().then(setSavedItems);
-  }, []);
+  }, [refreshKey]);
 
   const handleAddToCart = async (item: SavedItem) => {
     addToCart(item);

@@ -22,6 +22,7 @@ const Checkout = () => {
   const [coupon, setCoupon] = useState('');
   const [couponError, setCouponError] = useState('');
   const [discount, setDiscount] = useState(0);
+  const [refreshSavedListKey, setRefreshSavedListKey] = useState(0);
   const navigate = useNavigate();
 
   const addresses = [
@@ -85,9 +86,14 @@ const Checkout = () => {
                           <Button
                             variant="outline"
                             className="text-blue-600 border-blue-200 hover:bg-blue-50"
-                            onClick={() => {
+                            onClick={async () => {
+                              await addToSavedList(item);
                               removeFromCart(item.id, item.selectedColor, item.selectedSize);
-                              // Implement add to saved list logic here
+                              setRefreshSavedListKey(k => k + 1); // trigger refresh
+                              toast({
+                                title: "Saved for later",
+                                description: `${item.name} has been moved to your saved list.`,
+                              });
                             }}
                           >
                             Save for later
@@ -103,7 +109,7 @@ const Checkout = () => {
                 </section>
                 <section className="bg-white rounded-2xl shadow-md p-6 mb-6">
                   <h2 className="text-xl font-semibold mb-4">Saved List</h2>
-                  <CheckoutSavedList addToCart={addToCart} />
+                  <CheckoutSavedList addToCart={addToCart} refreshKey={refreshSavedListKey} />
                 </section>
                 <Button
                   className="w-full bg-blue-600 text-white"

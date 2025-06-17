@@ -21,10 +21,7 @@ const Checkout = () => {
   const [refreshSavedListKey, setRefreshSavedListKey] = useState(0);
   const navigate = useNavigate();
 
-  const addresses = [
-    { id: 1, label: '123 Main St, City, Country' },
-    { id: 2, label: '456 Elm St, City, Country' }
-  ];
+
 
   const [selectedAddress, setSelectedAddress] = useState<number | null>(null);
   const [selectedPayment, setSelectedPayment] = useState<number | null>(null);

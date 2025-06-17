@@ -123,7 +123,6 @@ const Checkout = () => {
               <section className="bg-white rounded-2xl shadow-md p-6">
                 {/* Address Section */}
                 <CheckoutAddressOptions
-                  addresses={addresses}
                   selectedAddress={selectedAddress}
                   setSelectedAddress={setSelectedAddress}
                 />

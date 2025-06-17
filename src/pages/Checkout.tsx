@@ -1,12 +1,12 @@
 import { useCart } from '../hooks/useCart';
 import CheckoutSavedList from '../components/CheckoutSavedList';
 import { useNavigate } from 'react-router-dom';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
-import { fetchSavedList, addToSavedList, removeFromSavedList } from '../services/savedListService';
-import { MapPin, CreditCard, DollarSign, CheckCircle } from 'lucide-react';
+import { addToSavedList } from '../services/savedListService';
+import { CheckCircle } from 'lucide-react';
 import { toast } from '../hooks/use-toast';
 import CouponInput from '../components/CouponInput';
 import OrderSummary from '../components/OrderSummary';
@@ -16,11 +16,7 @@ import CheckoutAddressOptions from '../components/CheckoutAddressOptions';
 const Checkout = () => {
   const { cart, addToCart, removeFromCart, updateQuantity } = useCart();
   const { items, total, itemCount } = cart;
-  const [isCartOpen, setIsCartOpen] = useState(false);
   const [step, setStep] = useState(1);
-  const [savedItems, setSavedItems] = useState([]);
-  const [coupon, setCoupon] = useState('');
-  const [couponError, setCouponError] = useState('');
   const [discount, setDiscount] = useState(0);
   const [refreshSavedListKey, setRefreshSavedListKey] = useState(0);
   const navigate = useNavigate();
@@ -33,19 +29,13 @@ const Checkout = () => {
   const [selectedAddress, setSelectedAddress] = useState<number | null>(null);
   const [selectedPayment, setSelectedPayment] = useState<number | null>(null);
 
-  // Fetch saved items on mount
-  useEffect(() => {
-    fetchSavedList().then(setSavedItems);
-  }, []);
-
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
       <Header
-        onCartOpen={() => setIsCartOpen(true)}
+        onCartOpen={() => {}}
         cartItemCount={itemCount}
       />
       <main className="flex-1 w-2/3 mx-auto py-8 px-4 space-y-8 min-w-[340px] max-w-4xl">
-        {/* Move the Checkout header here */}
         <h1 className="text-2xl font-bold mb-4">Checkout</h1>
         <div className="flex gap-8">
           {/* Left: Steps */}

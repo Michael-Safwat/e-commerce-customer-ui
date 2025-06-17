@@ -8,6 +8,7 @@ import Footer from '../components/Footer';
 import { fetchSavedList, addToSavedList, removeFromSavedList } from '../services/savedListService';
 import { MapPin, CreditCard, DollarSign, CheckCircle } from 'lucide-react';
 import { toast } from '../hooks/use-toast';
+import CouponInput from '../components/CouponInput';
 
 const Checkout = () => {
   const { cart, addToCart, removeFromCart, updateQuantity } = useCart();
@@ -265,29 +266,7 @@ const Checkout = () => {
                 </div>
               </div>
               <div className="bg-white rounded-2xl shadow-md p-6 mt-4 w-full">
-                <label className="block font-semibold mb-2">Apply Coupon</label>
-                <div className="flex gap-2">
-                  <input
-                    type="text"
-                    className="border rounded px-2 py-1 flex-1 min-w-0"
-                    placeholder="Enter coupon code"
-                    value={coupon}
-                    onChange={e => setCoupon(e.target.value)}
-                  />
-                  <Button
-                    type="button"
-                    className="bg-blue-600 text-white whitespace-nowrap"
-                    onClick={handleApplyCoupon}
-                  >
-                    Apply
-                  </Button>
-                </div>
-                {couponError && (
-                  <div className="text-red-600 text-sm mt-2">{couponError}</div>
-                )}
-                {discount > 0 && (
-                  <div className="text-green-600 text-sm mt-2">Coupon applied!</div>
-                )}
+                <CouponInput total={total} onDiscount={setDiscount} />
               </div>
             </div>
           )}

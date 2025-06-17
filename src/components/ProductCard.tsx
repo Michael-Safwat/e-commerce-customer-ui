@@ -2,6 +2,7 @@
 import { Star, Plus } from 'lucide-react';
 import { Product } from '../types/product';
 import { Button } from '@/components/ui/button';
+import { useNavigate } from 'react-router-dom';
 
 interface ProductCardProps {
   product: Product;
@@ -9,8 +10,22 @@ interface ProductCardProps {
 }
 
 const ProductCard = ({ product, onAddToCart }: ProductCardProps) => {
+  const navigate = useNavigate();
+
+  const handleProductClick = () => {
+    navigate(`/product/${product.id}`);
+  };
+
+  const handleAddToCart = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    onAddToCart(product);
+  };
+
   return (
-    <div className="group bg-white rounded-lg overflow-hidden hover:shadow-lg transition-all duration-300">
+    <div 
+      className="group bg-white rounded-lg overflow-hidden hover:shadow-lg transition-all duration-300 cursor-pointer"
+      onClick={handleProductClick}
+    >
       <div className="relative aspect-square overflow-hidden">
         <img
           src={product.image}
@@ -25,7 +40,7 @@ const ProductCard = ({ product, onAddToCart }: ProductCardProps) => {
         <Button
           size="icon"
           className="absolute top-3 right-3 bg-white/80 hover:bg-white text-gray-900 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
-          onClick={() => onAddToCart(product)}
+          onClick={handleAddToCart}
         >
           <Plus className="h-4 w-4" />
         </Button>

@@ -5,7 +5,7 @@ import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
-import { fetchSavedList, addToSavedList } from '../services/savedListService';
+import { fetchSavedList, addToSavedList, removeFromSavedList } from '../services/savedListService';
 
 const Checkout = () => {
   const { cart, addToCart, removeFromCart, updateQuantity } = useCart();
@@ -105,7 +105,12 @@ const Checkout = () => {
                     <Button
                       variant="outline"
                       className="text-green-600 border-green-200 hover:bg-green-50"
-                      onClick={() => addToCart(item)}
+                      onClick={async () => {
+                        addToCart(item);
+                        await removeFromSavedList(item.id);
+                        // Refresh saved items list
+                        fetchSavedList().then(setSavedItems);
+                      }}
                     >
                       Add to cart
                     </Button>

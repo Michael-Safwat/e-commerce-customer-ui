@@ -1,6 +1,6 @@
 import { Product } from '../types/product';
 
-export type SavedItem = {
+export type SavedProduct = {
   id: string | number;
   name: string;
   price: number;
@@ -8,9 +8,9 @@ export type SavedItem = {
   [key: string]: any;
 };
 
-let savedItems: SavedItem[] = [];
+let savedItems: SavedProduct[] = [];
 
-export async function fetchSavedList(): Promise<SavedItem[]> {
+export async function fetchSavedList(): Promise<SavedProduct[]> {
   // Simulate API call delay
   await new Promise((res) => setTimeout(res, 500));
   return [...savedItems];

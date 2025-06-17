@@ -7,6 +7,7 @@ import Header from '../components/Header';
 import Footer from '../components/Footer';
 import { fetchSavedList, addToSavedList, removeFromSavedList } from '../services/savedListService';
 import { MapPin, CreditCard, DollarSign, CheckCircle } from 'lucide-react';
+import { toast } from '../hooks/use-toast';
 
 const Checkout = () => {
   const { cart, addToCart, removeFromCart, updateQuantity } = useCart();
@@ -123,7 +124,20 @@ const Checkout = () => {
                     ))}
                   </div>
                 </section>
-                <Button className="w-full bg-blue-600 text-white" onClick={() => setStep(2)}>
+                <Button
+                  className="w-full bg-blue-600 text-white"
+                  onClick={() => {
+                    if (items.length === 0) {
+                      toast({
+                        title: "Cart is empty",
+                        description: "Please add at least one item to your cart before continuing.",
+                      });
+                      return;
+                    }
+                    setStep(2);
+                  }}
+                  disabled={items.length === 0}
+                >
                   Continue
                 </Button>
               </>
@@ -188,7 +202,10 @@ const Checkout = () => {
                   className="w-full bg-green-600 text-white flex items-center justify-center gap-2"
                   disabled={!selectedPayment || !selectedAddress}
                   onClick={() => {
-                    // Place your order confirmation logic here
+                    toast({
+                      title: "Order Confirmed",
+                      description: "Your order has been placed successfully!",
+                    });
                     navigate('/');
                   }}
                 >

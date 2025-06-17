@@ -1,9 +1,18 @@
-
-import { useState, useCallback } from 'react';
+import React, { createContext, useContext, useState, useCallback } from 'react';
 import { CartItem, CartState, Product } from '../types/product';
 import { toast } from '@/hooks/use-toast';
 
-export const useCart = () => {
+type CartContextType = {
+  cart: CartState;
+  addToCart: (product: Product, selectedColor?: string, selectedSize?: string) => void;
+  removeFromCart: (productId: string, selectedColor?: string, selectedSize?: string) => void;
+  updateQuantity: (productId: string, quantity: number, selectedColor?: string, selectedSize?: string) => void;
+  clearCart: () => void;
+};
+
+const CartContext = createContext<CartContextType | undefined>(undefined);
+
+export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [cart, setCart] = useState<CartState>({
     items: [],
     total: 0,
@@ -110,11 +119,21 @@ export const useCart = () => {
     });
   }, []);
 
-  return {
-    cart,
-    addToCart,
-    removeFromCart,
-    updateQuantity,
-    clearCart
-  };
+  return (
+    <CartContext.Provider value={{
+      cart,
+      addToCart,
+      removeFromCart,
+      updateQuantity,
+      clearCart
+    }}>
+      {children}
+    </CartContext.Provider>
+  );
+};
+
+export const useCart = () => {
+  const context = useContext(CartContext);
+  if (!context) throw new Error('useCart must be used within a CartProvider');
+  return context;
 };

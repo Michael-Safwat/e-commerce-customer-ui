@@ -1,8 +1,8 @@
-
 import { X, Minus, Plus, ShoppingBag } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { CartItem } from '../types/product';
+import { useNavigate } from 'react-router-dom';
 
 interface CartProps {
   isOpen: boolean;
@@ -14,6 +14,8 @@ interface CartProps {
 }
 
 const Cart = ({ isOpen, onClose, items, total, onUpdateQuantity, onRemoveItem }: CartProps) => {
+  const navigate = useNavigate();
+
   if (!isOpen) return null;
 
   return (
@@ -98,8 +100,14 @@ const Cart = ({ isOpen, onClose, items, total, onUpdateQuantity, onRemoveItem }:
                 <span>Total</span>
                 <span>${total.toFixed(2)}</span>
               </div>
-              <Button className="w-full bg-gray-900 hover:bg-gray-800 text-white">
-                Checkout
+              <Button
+                className="w-full bg-gray-900 hover:bg-gray-800 text-white"
+                onClick={() => {
+                  onClose();
+                  navigate('/checkout');
+                }}
+              >
+                Finalize Order
               </Button>
             </div>
           )}

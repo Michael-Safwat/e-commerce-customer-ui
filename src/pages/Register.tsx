@@ -5,60 +5,48 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { toast } from '@/hooks/use-toast';
+import { useAuth } from '../hooks/useAuth';
 
 const Register = () => {
-  const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    password: '',
-    confirmPassword: ''
-  });
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
+  const { register } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsLoading(true);
-
-    if (formData.password !== formData.confirmPassword) {
+    
+    if (password !== confirmPassword) {
       toast({
         title: "Password mismatch",
         description: "Passwords do not match.",
         variant: "destructive"
       });
-      setIsLoading(false);
       return;
     }
 
-    // Simulate registration process
-    setTimeout(() => {
-      if (formData.name && formData.email && formData.password) {
-        localStorage.setItem('user', JSON.stringify({ 
-          name: formData.name,
-          email: formData.email, 
-          isLoggedIn: true 
-        }));
-        toast({
-          title: "Registration successful",
-          description: "Welcome to our store!",
-        });
-        navigate('/');
-      } else {
-        toast({
-          title: "Registration failed",
-          description: "Please fill in all fields.",
-          variant: "destructive"
-        });
-      }
-      setIsLoading(false);
-    }, 1000);
-  };
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value
-    });
+    setIsLoading(true);
+    
+    const success = await register(email, password, name);
+    
+    if (success) {
+      toast({
+        title: "Registration successful",
+        description: "Welcome! Your account has been created.",
+      });
+      navigate('/');
+    } else {
+      toast({
+        title: "Registration failed",
+        description: "Please check your information and try again.",
+        variant: "destructive"
+      });
+    }
+    
+    setIsLoading(false);
   };
 
   return (
@@ -78,14 +66,13 @@ const Register = () => {
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
           <div className="space-y-4">
             <div>
-              <Label htmlFor="name">Full name</Label>
+              <Label htmlFor="name">Full Name</Label>
               <Input
                 id="name"
                 name="name"
                 type="text"
-                required
-                value={formData.name}
-                onChange={handleChange}
+                value={name}
+                onChange={(e) => setName(e.target.value)}
                 className="mt-1"
                 placeholder="Enter your full name"
               />
@@ -97,8 +84,8 @@ const Register = () => {
                 name="email"
                 type="email"
                 required
-                value={formData.email}
-                onChange={handleChange}
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
                 className="mt-1"
                 placeholder="Enter your email"
               />
@@ -110,21 +97,21 @@ const Register = () => {
                 name="password"
                 type="password"
                 required
-                value={formData.password}
-                onChange={handleChange}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
                 className="mt-1"
-                placeholder="Create a password"
+                placeholder="Enter your password"
               />
             </div>
             <div>
-              <Label htmlFor="confirmPassword">Confirm password</Label>
+              <Label htmlFor="confirmPassword">Confirm Password</Label>
               <Input
                 id="confirmPassword"
                 name="confirmPassword"
                 type="password"
                 required
-                value={formData.confirmPassword}
-                onChange={handleChange}
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
                 className="mt-1"
                 placeholder="Confirm your password"
               />

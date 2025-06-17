@@ -8,7 +8,7 @@ import Footer from '../components/Footer';
 import { fetchSavedList, addToSavedList } from '../services/savedListService';
 
 const Checkout = () => {
-  const { cart, addToCart, removeFromCart } = useCart();
+  const { cart, addToCart, removeFromCart, updateQuantity } = useCart();
   const { items, total, itemCount } = cart;
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [step, setStep] = useState(1);
@@ -50,7 +50,19 @@ const Checkout = () => {
                     <img src={item.image} alt={item.name} className="w-20 h-20 object-cover rounded-lg" />
                     <div className="flex-1">
                       <div className="font-semibold">{item.name}</div>
-                      <div className="text-sm text-gray-500">Qty: {item.quantity}</div>
+                      <div className="text-sm text-gray-500 flex items-center gap-2">
+                        Qty:
+                        <button
+                          className="px-2 py-1 border rounded disabled:opacity-50"
+                          onClick={() => updateQuantity(item.id, item.quantity - 1, item.selectedColor, item.selectedSize)}
+                          disabled={item.quantity <= 1}
+                        >-</button>
+                        <span className="mx-2">{item.quantity}</span>
+                        <button
+                          className="px-2 py-1 border rounded"
+                          onClick={() => updateQuantity(item.id, item.quantity + 1, item.selectedColor, item.selectedSize)}
+                        >+</button>
+                      </div>
                       <div className="text-sm text-gray-500">Price: ${item.price.toFixed(2)}</div>
                     </div>
                     <div className="flex flex-col gap-2">

@@ -1,0 +1,70 @@
+
+import { Star, Plus } from 'lucide-react';
+import { Product } from '../types/product';
+import { Button } from '@/components/ui/button';
+
+interface ProductCardProps {
+  product: Product;
+  onAddToCart: (product: Product) => void;
+}
+
+const ProductCard = ({ product, onAddToCart }: ProductCardProps) => {
+  return (
+    <div className="group bg-white rounded-lg overflow-hidden hover:shadow-lg transition-all duration-300">
+      <div className="relative aspect-square overflow-hidden">
+        <img
+          src={product.image}
+          alt={product.name}
+          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+        />
+        {product.originalPrice && (
+          <div className="absolute top-3 left-3 bg-red-500 text-white px-2 py-1 rounded-md text-sm font-medium">
+            Sale
+          </div>
+        )}
+        <Button
+          size="icon"
+          className="absolute top-3 right-3 bg-white/80 hover:bg-white text-gray-900 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+          onClick={() => onAddToCart(product)}
+        >
+          <Plus className="h-4 w-4" />
+        </Button>
+      </div>
+      
+      <div className="p-4">
+        <h3 className="font-medium text-gray-900 mb-1 line-clamp-2">{product.name}</h3>
+        <p className="text-sm text-gray-600 mb-2 line-clamp-2">{product.description}</p>
+        
+        <div className="flex items-center gap-1 mb-2">
+          <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+          <span className="text-sm text-gray-600">{product.rating}</span>
+          <span className="text-sm text-gray-400">({product.reviews})</span>
+        </div>
+        
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <span className="text-lg font-semibold text-gray-900">${product.price}</span>
+            {product.originalPrice && (
+              <span className="text-sm text-gray-500 line-through">${product.originalPrice}</span>
+            )}
+          </div>
+          
+          {product.colors && product.colors.length > 0 && (
+            <div className="flex gap-1">
+              {product.colors.slice(0, 3).map((color) => (
+                <div
+                  key={color}
+                  className="w-4 h-4 rounded-full border border-gray-300"
+                  style={{ backgroundColor: color.toLowerCase() }}
+                  title={color}
+                />
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default ProductCard;

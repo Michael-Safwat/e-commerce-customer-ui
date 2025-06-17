@@ -1,8 +1,9 @@
+import React, { useEffect, useState } from 'react';
 import { Star, Plus, Heart } from 'lucide-react';
 import { Product } from '../types/product';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
-import { addToSavedList } from '../services/savedListService';
+import { addToSavedList, fetchSavedList } from '../services/savedListService';
 
 interface ProductCardProps {
   product: Product;
@@ -11,6 +12,13 @@ interface ProductCardProps {
 
 const ProductCard = ({ product, onAddToCart }: ProductCardProps) => {
   const navigate = useNavigate();
+  const [isSaved, setIsSaved] = useState(false);
+
+  useEffect(() => {
+    fetchSavedList().then((items) => {
+      setIsSaved(items.some(item => item.id === product.id));
+    });
+  }, [product.id]);
 
   const handleProductClick = () => {
     navigate(`/product/${product.id}`);
@@ -24,6 +32,7 @@ const ProductCard = ({ product, onAddToCart }: ProductCardProps) => {
   const handleAddToSavedList = async (e: React.MouseEvent) => {
     e.stopPropagation();
     await addToSavedList(product);
+    setIsSaved(true);
     // Optionally show a toast or update UI
   };
 
@@ -53,11 +62,12 @@ const ProductCard = ({ product, onAddToCart }: ProductCardProps) => {
           </Button>
           <Button
             size="icon"
-            className="bg-white/80 hover:bg-white text-gray-900"
+            className="bg-white/80 hover:bg-white"
             onClick={handleAddToSavedList}
             title="Save to list"
+            disabled={isSaved}
           >
-            <Heart className="h-4 w-4" />
+            <Heart className={`h-4 w-4 ${isSaved ? 'text-red-600 fill-red-600' : 'text-gray-900'}`} />
           </Button>
         </div>
       </div>

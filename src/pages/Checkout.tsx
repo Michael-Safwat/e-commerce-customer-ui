@@ -15,6 +15,9 @@ const Checkout = () => {
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [step, setStep] = useState(1);
   const [savedItems, setSavedItems] = useState([]);
+  const [coupon, setCoupon] = useState('');
+  const [couponError, setCouponError] = useState('');
+  const [discount, setDiscount] = useState(0);
   const navigate = useNavigate();
 
   // Dummy addresses and payment methods
@@ -33,6 +36,27 @@ const Checkout = () => {
   useEffect(() => {
     fetchSavedList().then(setSavedItems);
   }, []);
+
+  // Example coupon logic
+  const validCoupons = {
+    SAVE10: 0.10, // 10% off
+    SAVE20: 0.20, // 20% off
+  };
+
+  const handleApplyCoupon = () => {
+    const code = coupon.trim().toUpperCase();
+    if (validCoupons[code]) {
+      setDiscount(validCoupons[code]);
+      setCouponError('');
+      toast({
+        title: "Coupon Applied",
+        description: `Coupon "${code}" applied!`,
+      });
+    } else {
+      setDiscount(0);
+      setCouponError('Invalid coupon code.');
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
@@ -198,6 +222,29 @@ const Checkout = () => {
                     </div>
                   </div>
                 </div>
+                <div className="mb-6">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Coupon Code
+                  </label>
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      value={coupon}
+                      onChange={(e) => setCoupon(e.target.value)}
+                      className="flex-1 border rounded-lg p-2 focus:ring-2 focus:ring-blue-600 focus:outline-none"
+                      placeholder="Enter your coupon code"
+                    />
+                    <Button
+                      className="bg-blue-600 text-white"
+                      onClick={handleApplyCoupon}
+                    >
+                      Apply
+                    </Button>
+                  </div>
+                  {couponError && (
+                    <p className="text-red-600 text-sm mt-2">{couponError}</p>
+                  )}
+                </div>
                 <Button
                   className="w-full bg-green-600 text-white flex items-center justify-center gap-2"
                   disabled={!selectedPayment || !selectedAddress}
@@ -227,9 +274,41 @@ const Checkout = () => {
                 <span>Shipping</span>
                 <span>$0.00</span>
               </div>
+              {discount > 0 && (
+                <div className="flex justify-between mb-2 text-green-600">
+                  <span>Discount</span>
+                  <span>- ${(total * discount).toFixed(2)}</span>
+                </div>
+              )}
               <div className="flex justify-between font-bold text-lg border-t pt-2">
                 <span>Total</span>
-                <span>${total.toFixed(2)}</span>
+                <span>${(total - total * discount).toFixed(2)}</span>
+              </div>
+              {/* Coupon Section */}
+              <div className="mt-6">
+                <label className="block font-semibold mb-2">Apply Coupon</label>
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    className="border rounded px-2 py-1 flex-1"
+                    placeholder="Enter coupon code"
+                    value={coupon}
+                    onChange={e => setCoupon(e.target.value)}
+                  />
+                  <Button
+                    type="button"
+                    className="bg-blue-600 text-white"
+                    onClick={handleApplyCoupon}
+                  >
+                    Apply
+                  </Button>
+                </div>
+                {couponError && (
+                  <div className="text-red-600 text-sm mt-2">{couponError}</div>
+                )}
+                {discount > 0 && (
+                  <div className="text-green-600 text-sm mt-2">Coupon applied!</div>
+                )}
               </div>
             </div>
           )}

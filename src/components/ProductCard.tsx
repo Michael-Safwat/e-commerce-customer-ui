@@ -3,7 +3,7 @@ import { Star, Plus, Heart } from 'lucide-react';
 import { Product } from '../types/product';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
-import { addToSavedList, fetchSavedList } from '../services/savedListService';
+import { addToSavedList, fetchSavedList, removeFromSavedList } from '../services/savedListService';
 
 interface ProductCardProps {
   product: Product;
@@ -29,11 +29,15 @@ const ProductCard = ({ product, onAddToCart }: ProductCardProps) => {
     onAddToCart(product);
   };
 
-  const handleAddToSavedList = async (e: React.MouseEvent) => {
+  const handleToggleSaved = async (e: React.MouseEvent) => {
     e.stopPropagation();
-    await addToSavedList(product);
-    setIsSaved(true);
-    // Optionally show a toast or update UI
+    if (isSaved) {
+      await removeFromSavedList(product.id);
+      setIsSaved(false);
+    } else {
+      await addToSavedList(product);
+      setIsSaved(true);
+    }
   };
 
   return (
@@ -62,12 +66,11 @@ const ProductCard = ({ product, onAddToCart }: ProductCardProps) => {
           </Button>
           <Button
             size="icon"
-            className="bg-white/80 hover:bg-white"
-            onClick={handleAddToSavedList}
-            title="Save to list"
-            disabled={isSaved}
+            className={`bg-white/80 hover:bg-white transition-colors`}
+            onClick={handleToggleSaved}
+            title={isSaved ? "Remove from saved list" : "Save to list"}
           >
-            <Heart className={`h-4 w-4 ${isSaved ? 'text-red-600 fill-red-600' : 'text-gray-900'}`} />
+            <Heart className={`h-4 w-4 transition-colors ${isSaved ? 'text-red-600 fill-red-600' : 'text-gray-900'}`} />
           </Button>
         </div>
       </div>

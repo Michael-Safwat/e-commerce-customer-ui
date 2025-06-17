@@ -11,6 +11,7 @@ import { toast } from '../hooks/use-toast';
 import CouponInput from '../components/CouponInput';
 import OrderSummary from '../components/OrderSummary';
 import CheckoutPaymentOptions from '../components/CheckoutPaymentOptions';
+import CheckoutAddressOptions from '../components/CheckoutAddressOptions';
 
 const Checkout = () => {
   const { cart, addToCart, removeFromCart, updateQuantity } = useCart();
@@ -23,15 +24,11 @@ const Checkout = () => {
   const [discount, setDiscount] = useState(0);
   const navigate = useNavigate();
 
-  // Dummy addresses and payment methods
   const addresses = [
     { id: 1, label: '123 Main St, City, Country' },
     { id: 2, label: '456 Elm St, City, Country' }
   ];
-  const paymentMethods = [
-    { id: 1, label: 'Visa **** 1234' },
-    { id: 2, label: 'PayPal: user@email.com' }
-  ];
+
   const [selectedAddress, setSelectedAddress] = useState<number | null>(null);
   const [selectedPayment, setSelectedPayment] = useState<number | null>(null);
 
@@ -39,27 +36,6 @@ const Checkout = () => {
   useEffect(() => {
     fetchSavedList().then(setSavedItems);
   }, []);
-
-  // Example coupon logic
-  const validCoupons = {
-    SAVE10: 0.10, // 10% off
-    SAVE20: 0.20, // 20% off
-  };
-
-  const handleApplyCoupon = () => {
-    const code = coupon.trim().toUpperCase();
-    if (validCoupons[code]) {
-      setDiscount(validCoupons[code]);
-      setCouponError('');
-      toast({
-        title: "Coupon Applied",
-        description: `Coupon "${code}" applied!`,
-      });
-    } else {
-      setDiscount(0);
-      setCouponError('Invalid coupon code.');
-    }
-  };
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
@@ -172,26 +148,11 @@ const Checkout = () => {
             {step === 2 && (
               <section className="bg-white rounded-2xl shadow-md p-6">
                 {/* Address Section */}
-                <h2 className="text-xl font-semibold mb-4">Address</h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
-                  {addresses.map(addr => (
-                    <div
-                      key={addr.id}
-                      className={`border rounded-lg p-4 flex items-center gap-4 cursor-pointer transition ${
-                        selectedAddress === addr.id
-                          ? 'border-blue-600 bg-blue-50'
-                          : 'border-gray-200 bg-white'
-                      }`}
-                      onClick={() => setSelectedAddress(addr.id)}
-                    >
-                      <MapPin className="w-8 h-8 text-blue-600" />
-                      <div>
-                        <div className="font-semibold">{addr.label}</div>
-                        <div className="text-sm text-gray-500">Delivery Address</div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
+                <CheckoutAddressOptions
+                  addresses={addresses}
+                  selectedAddress={selectedAddress}
+                  setSelectedAddress={setSelectedAddress}
+                />
 
                 {/* Payment Section */}
                 <CheckoutPaymentOptions

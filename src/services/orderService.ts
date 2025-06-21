@@ -1,38 +1,123 @@
-export type Order = {
-  id: string;
-  date: string;
-  status: 'pending' | 'shipped' | 'delivered' | 'cancelled';
-  total: number;
-  items: {
-    name: string;
-    quantity: number;
-    price: number;
-  }[];
-};
+import { API_CONFIG } from '@/config/api';
+import { OrderDTO, OrderPage, OrderConfirmationRequest, CartConfirmation } from '@/types/order';
 
-export async function fetchUserOrders(): Promise<Order[]> {
-  // Simulate API call delay
-  await new Promise((res) => setTimeout(res, 500));
-  // Dummy data
-  return [
-    {
-      id: 'ORD-001',
-      date: '2025-06-01',
-      status: 'delivered',
-      total: 299.99,
-      items: [
-        { name: 'iPhone 15', quantity: 1, price: 999.99 },
-        { name: 'Apple Case', quantity: 1, price: 49.99 },
-      ],
-    },
-    {
-      id: 'ORD-002',
-      date: '2025-06-10',
-      status: 'pending',
-      total: 59.99,
-      items: [
-        { name: 'Apple Watch Band', quantity: 1, price: 59.99 },
-      ],
-    },
-  ];
+class OrderService {
+  private baseUrl = `${API_CONFIG.BASE_URL}/users`;
+
+  async getUserOrders(userId: string, page: number = 0, size: number = 10): Promise<OrderPage> {
+    try {
+      const token = localStorage.getItem('token') || localStorage.getItem('user_token');
+      if (!token) {
+        throw new Error('No authentication token found');
+      }
+
+      const response = await fetch(
+        `${this.baseUrl}/${userId}/orders?page=${page}&size=${size}`,
+        {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+        }
+      );
+
+      if (!response.ok) {
+        // Handle unauthorized/forbidden responses
+        if (response.status === 401 || response.status === 403) {
+          console.warn('Token is invalid or expired, clearing data and redirecting to login');
+          localStorage.removeItem('token');
+          localStorage.removeItem('user');
+          window.location.href = '/login';
+          throw new Error('Authentication required. Please login again.');
+        }
+        
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error('Error fetching user orders:', error);
+      throw error;
+    }
+  }
+
+  async getOrderById(userId: string, orderId: number): Promise<OrderDTO> {
+    try {
+      const token = localStorage.getItem('token') || localStorage.getItem('user_token');
+      if (!token) {
+        throw new Error('No authentication token found');
+      }
+
+      const response = await fetch(
+        `${this.baseUrl}/${userId}/orders/${orderId}`,
+        {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+        }
+      );
+
+      if (!response.ok) {
+        // Handle unauthorized/forbidden responses
+        if (response.status === 401 || response.status === 403) {
+          console.warn('Token is invalid or expired, clearing data and redirecting to login');
+          localStorage.removeItem('token');
+          localStorage.removeItem('user');
+          window.location.href = '/login';
+          throw new Error('Authentication required. Please login again.');
+        }
+        
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error('Error fetching order details:', error);
+      throw error;
+    }
+  }
+
+  async finalizeOrder(userId: string, request: OrderConfirmationRequest): Promise<CartConfirmation> {
+    try {
+      const token = localStorage.getItem('token') || localStorage.getItem('user_token');
+      if (!token) {
+        throw new Error('No authentication token found');
+      }
+
+      const response = await fetch(
+        `${this.baseUrl}/${userId}/orders/finalizeOrder`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify(request),
+        }
+      );
+
+      if (!response.ok) {
+        // Handle unauthorized/forbidden responses
+        if (response.status === 401 || response.status === 403) {
+          console.warn('Token is invalid or expired, clearing data and redirecting to login');
+          localStorage.removeItem('token');
+          localStorage.removeItem('user');
+          window.location.href = '/login';
+          throw new Error('Authentication required. Please login again.');
+        }
+        
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error('Error finalizing order:', error);
+      throw error;
+    }
+  }
 }
+
+export const orderService = new OrderService(); 

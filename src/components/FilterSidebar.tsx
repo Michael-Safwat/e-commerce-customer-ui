@@ -1,5 +1,3 @@
-
-import { categories } from '../data/products';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 
@@ -16,6 +14,15 @@ const FilterSidebar = ({
   priceRange, 
   onPriceRangeChange 
 }: FilterSidebarProps) => {
+  const categories = [
+    { id: 'all', name: 'All Products' },
+    { id: 'electronics', name: 'Electronics' },
+    { id: 'clothing', name: 'Clothing' },
+    { id: 'accessories', name: 'Accessories' },
+    { id: 'home', name: 'Home & Garden' },
+    { id: 'sports', name: 'Sports & Outdoors' }
+  ];
+
   const priceRanges = [
     { label: 'All Prices', min: 0, max: 1000 },
     { label: 'Under $50', min: 0, max: 50 },

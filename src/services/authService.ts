@@ -19,6 +19,17 @@ export interface ApiResponse<T> {
 }
 
 class AuthService {
+  private handleUnauthorizedResponse(response: Response): void {
+    if (response.status === 401 || response.status === 403) {
+      console.warn('Token is invalid or expired, clearing data and redirecting to login');
+      // Clear stored authentication data
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+      // Redirect to login page
+      window.location.href = '/login';
+    }
+  }
+
   private async makeRequest<T>(
     endpoint: string,
     options: RequestInit = {}
@@ -46,6 +57,13 @@ class AuthService {
       console.log('Response headers:', Object.fromEntries(response.headers.entries()));
       
       if (!response.ok) {
+        // Handle unauthorized/forbidden responses first
+        if (response.status === 401 || response.status === 403) {
+          this.handleUnauthorizedResponse(response);
+          const responseText = await response.text();
+          throw new Error(responseText || 'Authentication required. Please login again.');
+        }
+
         // Check if the response has WWW-Authenticate header (browser auth popup trigger)
         const wwwAuth = response.headers.get('WWW-Authenticate');
         if (wwwAuth) {
@@ -169,11 +187,22 @@ class AuthService {
     };
 
     try {
-      return await this.makeRequest<{ token: string }>('/login', {
+      const response = await this.makeRequest<any>('/login', {
         method: 'POST',
         headers: headers,
         // The body is empty for the login request when using Basic Auth.
       });
+
+      // Handle both JSON and plain text responses
+      if (typeof response === 'string') {
+        // If response is a plain string (just the token)
+        return { token: response };
+      } else if (response && typeof response === 'object' && response.token) {
+        // If response is a JSON object with token property
+        return { token: response.token };
+      } else {
+        throw new Error('Invalid response format from server');
+      }
     } catch (error) {
       console.error('Login failed:', error);
       throw error;

@@ -1,7 +1,6 @@
-import { useState, useMemo } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Star, Plus, Minus, ShoppingBag, Heart } from 'lucide-react';
-import { products } from '../data/products';
+import { ArrowLeft, Star, Plus, Minus, ShoppingBag, Heart, Loader2 } from 'lucide-react';
 import { useCart } from '../hooks/useCart';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -12,34 +11,81 @@ import Cart from '../components/Cart';
 import { toast } from '@/hooks/use-toast';
 import { useAuth } from '../hooks/useAuth';
 import Footer from '../components/Footer';
+import { productService } from '../services/productService';
+import { Product } from '../types/product';
 
 const ProductDetails = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const { cart, addToCart } = useCart();
-  const { isLoggedIn } = useAuth();
+  const { isAuthenticated } = useAuth();
   
   const [selectedColor, setSelectedColor] = useState<string>('');
   const [selectedSize, setSelectedSize] = useState<string>('');
   const [quantity, setQuantity] = useState(1);
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [product, setProduct] = useState<Product | null>(null);
+  const [similarProducts, setSimilarProducts] = useState<Product[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const product = products.find(p => p.id === id);
-  
-  const similarProducts = useMemo(() => {
-    if (!product) return [];
-    return products
-      .filter(p => p.category === product.category && p.id !== product.id)
-      .slice(0, 4);
-  }, [product]);
+  // Fetch product details
+  useEffect(() => {
+    const fetchProduct = async () => {
+      if (!id) return;
+      
+      try {
+        setIsLoading(true);
+        setError(null);
+        
+        const productData = await productService.getProductById(parseInt(id));
+        setProduct(productData);
+        
+        // Fetch similar products from the same category
+        const similarResult = await productService.getProductsByCategory(
+          productData.category, 
+          0, 
+          4
+        );
+        setSimilarProducts(
+          similarResult.content.filter(p => p.id !== productData.id)
+        );
+      } catch (err) {
+        console.error('Error fetching product:', err);
+        setError('Failed to load product details. Please try again later.');
+        toast({
+          title: "Error",
+          description: "Failed to load product details. Please try again later.",
+          variant: "destructive"
+        });
+      } finally {
+        setIsLoading(false);
+      }
+    };
 
-  if (!product) {
+    fetchProduct();
+  }, [id]);
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <Loader2 className="h-8 w-8 animate-spin text-blue-600 mx-auto mb-4" />
+          <p className="text-gray-600">Loading product details...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error || !product) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
           <h2 className="text-2xl font-semibold text-gray-900 mb-2">Product not found</h2>
-          <p className="text-gray-600 mb-4">The product you're looking for doesn't exist.</p>
+          <p className="text-gray-600 mb-4">
+            {error || "The product you're looking for doesn't exist."}
+          </p>
           <Button onClick={() => navigate('/')}>Go back to store</Button>
         </div>
       </div>
@@ -47,7 +93,7 @@ const ProductDetails = () => {
   }
 
   const handleAddToCart = () => {
-    if (!isLoggedIn) {
+    if (!isAuthenticated) {
       toast({
         title: "Login required",
         description: "Please login to add items to your cart.",
@@ -206,7 +252,7 @@ const ProductDetails = () => {
                   >
                     <Minus className="h-4 w-4" />
                   </Button>
-                  <span className="text-lg font-medium w-12 text-center">{quantity}</span>
+                  <span className="w-12 text-center text-lg font-medium">{quantity}</span>
                   <Button
                     variant="outline"
                     size="icon"
@@ -217,91 +263,90 @@ const ProductDetails = () => {
                 </div>
               </div>
 
-              {/* Add to Cart */}
-              <div className="flex gap-3">
-                <Button
-                  onClick={handleAddToCart}
-                  className="flex-1 bg-gray-900 hover:bg-gray-800 text-white py-4 text-lg"
-                  disabled={!product.inStock}
-                >
-                  <ShoppingBag className="h-5 w-5 mr-2" />
-                  {product.inStock ? 'Add to Cart' : 'Out of Stock'}
-                </Button>
-                <Button variant="outline" size="icon" className="py-4 px-4">
-                  <Heart className="h-5 w-5" />
-                </Button>
-              </div>
+              {/* Add to Cart Button */}
+              <Button
+                onClick={handleAddToCart}
+                className="w-full bg-blue-600 hover:bg-blue-700 text-white py-4 text-lg font-semibold"
+                disabled={!product.inStock}
+              >
+                <ShoppingBag className="h-5 w-5 mr-2" />
+                {product.inStock ? 'Add to Cart' : 'Out of Stock'}
+              </Button>
+
+              {/* Wishlist Button */}
+              <Button
+                variant="outline"
+                className="w-full border-gray-300 hover:border-gray-400"
+              >
+                <Heart className="h-5 w-5 mr-2" />
+                Add to Wishlist
+              </Button>
             </div>
           </div>
 
-          {/* Product Details Tabs */}
+          {/* Product Tabs */}
           <div className="mt-16">
-            <Tabs defaultValue="details" className="w-full">
+            <Tabs defaultValue="description" className="w-full">
               <TabsList className="grid w-full grid-cols-3">
-                <TabsTrigger value="details">Details</TabsTrigger>
-                <TabsTrigger value="reviews">Reviews ({product.reviews})</TabsTrigger>
-                <TabsTrigger value="similar">Similar Products</TabsTrigger>
+                <TabsTrigger value="description">Description</TabsTrigger>
+                <TabsTrigger value="reviews">Reviews</TabsTrigger>
+                <TabsTrigger value="shipping">Shipping</TabsTrigger>
               </TabsList>
               
-              <TabsContent value="details" className="mt-8">
-                <div className="bg-white rounded-xl p-8">
-                  <h3 className="text-2xl font-semibold text-gray-900 mb-6">Product Details</h3>
-                  <div className="prose max-w-none">
-                    <p className="text-gray-600 text-lg leading-relaxed mb-6">
-                      {product.description}
-                    </p>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      <div>
-                        <h4 className="font-medium text-gray-900 mb-2">Category</h4>
-                        <p className="text-gray-600 capitalize">{product.category}</p>
-                      </div>
-                      <div>
-                        <h4 className="font-medium text-gray-900 mb-2">Availability</h4>
-                        <p className={`${product.inStock ? 'text-green-600' : 'text-red-600'}`}>
-                          {product.inStock ? 'In Stock' : 'Out of Stock'}
-                        </p>
-                      </div>
-                      {product.colors && (
-                        <div>
-                          <h4 className="font-medium text-gray-900 mb-2">Available Colors</h4>
-                          <p className="text-gray-600">{product.colors.join(', ')}</p>
-                        </div>
-                      )}
-                      {product.sizes && (
-                        <div>
-                          <h4 className="font-medium text-gray-900 mb-2">Available Sizes</h4>
-                          <p className="text-gray-600">{product.sizes.join(', ')}</p>
-                        </div>
-                      )}
-                    </div>
-                  </div>
+              <TabsContent value="description" className="mt-6">
+                <div className="bg-white rounded-lg p-6">
+                  <p className="text-gray-600 leading-relaxed">{product.description}</p>
                 </div>
               </TabsContent>
               
-              <TabsContent value="reviews" className="mt-8">
-                <ProductReviews productId={product.id} rating={product.rating} reviewCount={product.reviews} />
+              <TabsContent value="reviews" className="mt-6">
+                <ProductReviews 
+                  productId={product.id} 
+                  rating={product.rating}
+                  reviewCount={product.reviews}
+                />
               </TabsContent>
               
-              <TabsContent value="similar" className="mt-8">
-                <div className="bg-white rounded-xl p-8">
-                  <h3 className="text-2xl font-semibold text-gray-900 mb-6">Similar Products</h3>
-                  {similarProducts.length > 0 ? (
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                      {similarProducts.map((similarProduct) => (
-                        <ProductCard
-                          key={similarProduct.id}
-                          product={similarProduct}
-                          onAddToCart={(product) => addToCart(product)}
-                        />
-                      ))}
-                    </div>
-                  ) : (
-                    <p className="text-gray-600">No similar products found.</p>
-                  )}
+              <TabsContent value="shipping" className="mt-6">
+                <div className="bg-white rounded-lg p-6">
+                  <h3 className="text-lg font-semibold text-gray-900 mb-4">Shipping Information</h3>
+                  <div className="space-y-3 text-gray-600">
+                    <p>• Free shipping on orders over $50</p>
+                    <p>• Standard delivery: 3-5 business days</p>
+                    <p>• Express delivery: 1-2 business days</p>
+                    <p>• International shipping available</p>
+                  </div>
                 </div>
               </TabsContent>
             </Tabs>
           </div>
+
+          {/* Similar Products */}
+          {similarProducts.length > 0 && (
+            <div className="mt-16">
+              <h2 className="text-2xl font-semibold text-gray-900 mb-8">Similar Products</h2>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                {similarProducts.map((similarProduct) => (
+                  <ProductCard
+                    key={similarProduct.id}
+                    product={similarProduct}
+                    onAddToCart={() => {
+                      if (!isAuthenticated) {
+                        toast({
+                          title: "Login required",
+                          description: "Please login to add items to your cart.",
+                          variant: "destructive"
+                        });
+                        navigate('/login');
+                        return;
+                      }
+                      addToCart(similarProduct);
+                    }}
+                  />
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       </div>
 

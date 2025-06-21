@@ -1,15 +1,5 @@
-import { Product } from '../types/product';
-
-export const categories = [
-  { id: 'all', name: 'All Products' },
-  { id: 'electronics', name: 'Electronics' },
-  { id: 'clothing', name: 'Clothing' },
-  { id: 'accessories', name: 'Accessories' },
-  { id: 'home', name: 'Home & Garden' },
-  { id: 'sports', name: 'Sports & Outdoors' }
-];
-
-export const products: Product[] = [
+// Product data from the frontend
+const products = [
   {
     id: '1',
     name: 'Wireless Headphones Pro',
@@ -282,3 +272,107 @@ export const products: Product[] = [
     reviews: 59
   }
 ];
+
+// Configuration
+const BACKEND_URL = 'http://localhost:8080'; // Update this to your backend URL
+const API_ENDPOINT = '/api/products'; // Update this to your actual endpoint
+
+// Function to download image and convert to base64
+async function downloadImageAsBase64(imageUrl) {
+  try {
+    const response = await fetch(imageUrl);
+    const buffer = await response.arrayBuffer();
+    const base64 = Buffer.from(buffer).toString('base64');
+    const contentType = response.headers.get('content-type');
+    return `data:${contentType};base64,${base64}`;
+  } catch (error) {
+    console.error(`Failed to download image from ${imageUrl}:`, error.message);
+    return null;
+  }
+}
+
+// Function to create a product
+async function createProduct(product) {
+  try {
+    // Convert frontend product format to backend DTO format
+    const productDTO = {
+      id: null, // Let the backend generate the ID
+      name: product.name,
+      description: product.description,
+      stock: product.inStock ? 100 : 0, // Default stock value
+      price: product.price,
+      category: product.category,
+      image: product.image, // We'll use the URL directly for now
+      rating: product.rating
+    };
+
+    // Create FormData for multipart/form-data
+    const formData = new FormData();
+    formData.append('product', new Blob([JSON.stringify(productDTO)], {
+      type: 'application/json'
+    }));
+
+    // For now, we'll send without image file since we're using URLs
+    // If you want to download and upload images, uncomment the following:
+    /*
+    const base64Image = await downloadImageAsBase64(product.image);
+    if (base64Image) {
+      const imageBlob = await fetch(base64Image).then(r => r.blob());
+      formData.append('image', imageBlob, `${product.name.replace(/\s+/g, '_')}.jpg`);
+    }
+    */
+
+    const response = await fetch(`${BACKEND_URL}${API_ENDPOINT}`, {
+      method: 'POST',
+      body: formData
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const result = await response.json();
+    console.log(`✅ Created product: ${product.name}`);
+    return result;
+  } catch (error) {
+    console.error(`❌ Failed to create product ${product.name}:`, error.message);
+    return null;
+  }
+}
+
+// Main function to populate all products
+async function populateProducts() {
+  console.log('🚀 Starting product population...');
+  console.log(`📡 Backend URL: ${BACKEND_URL}`);
+  console.log(`🔗 API Endpoint: ${API_ENDPOINT}`);
+  console.log(`📦 Total products to create: ${products.length}`);
+  console.log('');
+
+  let successCount = 0;
+  let failureCount = 0;
+
+  for (let i = 0; i < products.length; i++) {
+    const product = products[i];
+    console.log(`📝 Processing ${i + 1}/${products.length}: ${product.name}`);
+    
+    const result = await createProduct(product);
+    if (result) {
+      successCount++;
+    } else {
+      failureCount++;
+    }
+
+    // Add a small delay between requests to avoid overwhelming the server
+    if (i < products.length - 1) {
+      await new Promise(resolve => setTimeout(resolve, 500));
+    }
+  }
+
+  console.log('');
+  console.log('🎉 Product population completed!');
+  console.log(`✅ Successfully created: ${successCount} products`);
+  console.log(`❌ Failed to create: ${failureCount} products`);
+}
+
+// Run the script
+populateProducts().catch(console.error); 

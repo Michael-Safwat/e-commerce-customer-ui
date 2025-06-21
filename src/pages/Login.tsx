@@ -49,7 +49,7 @@ const Login = () => {
           setLoginError("Your account is suspended. Please check your email to reset your password, or request a new link below.");
           setIsLocked(true);
         } else if (errorMessage.toLowerCase().includes('user account is disabled') ||
-                   errorMessage.toLowerCase().includes('disabled') || 
+                   errorMessage.toLowerCase().includes('verified') || 
                    errorMessage.toLowerCase().includes('not enabled')) {
           setLoginError("Your account isn't verified. Please check your email for a verification link.");
         } else {

@@ -71,7 +71,7 @@ class AuthService {
             throw new Error("User account is locked");
           }
           
-          if (lowerResponseText.includes("disabled") || 
+          if (lowerResponseText.includes("verified") || 
               lowerResponseText.includes("not enabled") ||
               lowerResponseText.includes("account is disabled") ||
               lowerResponseText.includes("User is disabled")) {

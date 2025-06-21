@@ -8,11 +8,31 @@ import PasswordManager from '../components/PasswordManager';
 import BasicInfoManager from '../components/BasicInfoManager';
 import Orders from '../components/Orders';
 import SavedList from '../components/SavedList';
+import { Loader2 } from 'lucide-react';
+import { Navigate } from 'react-router-dom';
 
 const Profile = () => {
   const { cart } = useCart();
+  const { user, isAuthenticated, isLoading } = useAuth();
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<'account' | 'orders' | 'saved'>('account');
+
+  // Show loading state while auth is initializing
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <Loader2 className="h-8 w-8 animate-spin text-blue-600 mx-auto mb-4" />
+          <p className="text-gray-600">Loading profile...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Redirect to login if not authenticated
+  if (!isAuthenticated()) {
+    return <Navigate to="/login" replace />;
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">

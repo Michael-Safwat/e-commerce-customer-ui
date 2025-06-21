@@ -51,6 +51,7 @@ const Login = () => {
         } else if (errorMessage.toLowerCase().includes('user account is disabled') ||
                    errorMessage.toLowerCase().includes('verified') || 
                    errorMessage.toLowerCase().includes('not enabled')) {
+                    
           setLoginError("Your account isn't verified. Please check your email for a verification link.");
         } else {
           setLoginError(errorMessage);

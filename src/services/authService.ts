@@ -74,7 +74,7 @@ class AuthService {
           if (lowerResponseText.includes("disabled") || 
               lowerResponseText.includes("not enabled") ||
               lowerResponseText.includes("account is disabled") ||
-              lowerResponseText.includes("user account is disabled")) {
+              lowerResponseText.includes("User is disabled")) {
             throw new Error("User account is disabled");
           }
           
@@ -175,30 +175,8 @@ class AuthService {
         // The body is empty for the login request when using Basic Auth.
       });
     } catch (error) {
-      if (error instanceof Error) {
-        const msg = error.message.toLowerCase();
-        if (
-          msg.includes('locked') ||
-          msg.includes('disabled') ||
-          msg.includes('bad credentials') ||
-          msg.includes('user not found')
-        ) {
-          throw error;
-        }
-      }
-      
-      console.error('Basic Auth login failed, trying alternative method:', error);
-      
-      // Fallback: Try with JSON body instead of Basic Auth if browser popup occurs
-      const fallbackHeaders = {
-        'Content-Type': 'application/json',
-      };
-
-      return await this.makeRequest<{ token: string }>('/login', {
-        method: 'POST',
-        headers: fallbackHeaders,
-        body: JSON.stringify({ email, password }),
-      });
+      console.error('Login failed:', error);
+      throw error;
     }
   }
 

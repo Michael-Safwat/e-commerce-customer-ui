@@ -51,7 +51,7 @@ const Login = () => {
         } else if (errorMessage.toLowerCase().includes('user account is disabled') ||
                    errorMessage.toLowerCase().includes('disabled') || 
                    errorMessage.toLowerCase().includes('not enabled')) {
-          setLoginError("Your account has been disabled. Please contact support for assistance.");
+          setLoginError("Your account isn't verified. Please check your email for a verification link.");
         } else {
           setLoginError(errorMessage);
         }
@@ -73,7 +73,7 @@ const Login = () => {
       } else if (errorMessage.toLowerCase().includes('user account is disabled') ||
                  errorMessage.toLowerCase().includes('disabled') || 
                  errorMessage.toLowerCase().includes('not enabled')) {
-        setLoginError("Your account has been disabled. Please contact support for assistance.");
+        setLoginError("Your account isn't verified. Please check your email for a verification link.");
       } else if (errorMessage.toLowerCase().includes('full authentication is required to access this resource')) {
         setLoginError("Please login to access this resource.");
       } else {

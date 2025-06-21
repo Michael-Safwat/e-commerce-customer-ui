@@ -1,4 +1,6 @@
 import { useState, useEffect, createContext, useContext, ReactNode } from 'react';
+import { authService, UserDTO } from '@/services/authService';
+import { STORAGE_KEYS } from '@/config/api';
 
 interface User {
   email: string;
@@ -12,59 +14,82 @@ interface User {
 
 interface AuthContextType {
   user: User | null;
-  login: (email: string, password: string) => Promise<boolean>;
-  register: (email: string, password: string, name?: string) => Promise<boolean>;
+  login: (email: string, password: string) => Promise<{ success: boolean; error?: string }>;
+  register: (email: string, password: string, name?: string) => Promise<{ success: boolean; error?: string }>;
   logout: () => void;
   isLoggedIn: boolean;
+  isLoading: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const savedUser = localStorage.getItem('user');
-    if (savedUser) {
-      setUser(JSON.parse(savedUser));
+    const savedUser = localStorage.getItem(STORAGE_KEYS.USER);
+    const savedToken = localStorage.getItem(STORAGE_KEYS.TOKEN);
+    
+    if (savedUser && savedToken) {
+      try {
+        setUser(JSON.parse(savedUser));
+      } catch (error) {
+        console.error('Failed to parse saved user:', error);
+        localStorage.removeItem(STORAGE_KEYS.USER);
+        localStorage.removeItem(STORAGE_KEYS.TOKEN);
+      }
     }
+    setIsLoading(false);
   }, []);
 
-  const login = async (email: string, password: string): Promise<boolean> => {
-    // Simulate login API call
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        if (email && password) {
-          const userData = { email, isLoggedIn: true };
-          setUser(userData);
-          localStorage.setItem('user', JSON.stringify(userData));
-          resolve(true);
-        } else {
-          resolve(false);
-        }
-      }, 1000);
-    });
+  const login = async (email: string, password: string): Promise<{ success: boolean; error?: string }> => {
+    try {
+      const response = await authService.loginUser(email, password);
+      
+      // The backend now only returns a token.
+      // We'll create a user object with the email used for login.
+      // The name can be fetched later or decoded from the JWT if needed.
+      const userData: User = {
+        email: email,
+        name: email.split('@')[0], // Use email prefix as a temporary name
+        isLoggedIn: true,
+      };
+
+      setUser(userData);
+      localStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(userData));
+      localStorage.setItem(STORAGE_KEYS.TOKEN, response.token);
+      
+      return { success: true };
+    } catch (error) {
+      console.error('Login failed:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Login failed. Please try again.';
+      return { success: false, error: errorMessage };
+    }
   };
 
-  const register = async (email: string, password: string, name?: string): Promise<boolean> => {
-    // Simulate registration API call
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        if (email && password) {
-          const userData = { email, name, isLoggedIn: true };
-          setUser(userData);
-          localStorage.setItem('user', JSON.stringify(userData));
-          resolve(true);
-        } else {
-          resolve(false);
-        }
-      }, 1000);
-    });
+  const register = async (email: string, password: string, name?: string): Promise<{ success: boolean; error?: string }> => {
+    try {
+      const userData = await authService.registerUser({
+        email,
+        password,
+        name: name || '',
+      });
+
+      // Don't automatically log in after registration since email verification is required
+      // The user will need to verify their email first
+      return { success: true };
+    } catch (error) {
+      console.error('Registration failed:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Registration failed. Please try again.';
+      return { success: false, error: errorMessage };
+    }
   };
 
   const logout = () => {
     setUser(null);
-    localStorage.removeItem('user');
+    localStorage.removeItem(STORAGE_KEYS.USER);
+    localStorage.removeItem(STORAGE_KEYS.TOKEN);
   };
 
   return (
@@ -73,7 +98,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       login,
       register,
       logout,
-      isLoggedIn: !!user?.isLoggedIn
+      isLoggedIn: !!user?.isLoggedIn,
+      isLoading
     }}>
       {children}
     </AuthContext.Provider>

@@ -23,6 +23,7 @@ interface AuthContextType {
   validateToken: () => Promise<boolean>;
   isLoading: boolean;
   refreshUserProfile: () => Promise<void>;
+  setLogoutCallback: (callback: () => void) => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -30,6 +31,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [logoutCallback, setLogoutCallback] = useState<() => void>(() => {});
 
   // Function to decode JWT token and extract user info
   const decodeToken = (token: string): { userId: string; email: string } | null => {
@@ -260,6 +262,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     // Also clear any other auth-related data that might be stored
     localStorage.removeItem('token'); // Fallback for any direct token storage
     localStorage.removeItem('user'); // Fallback for any direct user storage
+    logoutCallback();
   };
 
   const value = {
@@ -270,7 +273,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     isAuthenticated,
     validateToken,
     isLoading,
-    refreshUserProfile
+    refreshUserProfile,
+    setLogoutCallback
   };
 
   return (

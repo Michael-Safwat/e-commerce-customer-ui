@@ -10,6 +10,7 @@ import {
   DropdownMenuSeparator,
 } from '@/components/ui/dropdown-menu';
 import { useAuth } from '../hooks/useAuth';
+import { toast } from '../hooks/use-toast';
 
 interface HeaderProps {
   onCartOpen: () => void;
@@ -104,11 +105,22 @@ const Header = ({ onCartOpen, cartItemCount, searchQuery, onSearchChange }: Head
             <Button
               variant="ghost"
               size="icon"
-              onClick={onCartOpen}
+              onClick={() => {
+                if (!isAuthenticated()) {
+                  toast({
+                    title: "Login required",
+                    description: "Please login to view your cart.",
+                    variant: "destructive"
+                  });
+                  navigate('/login');
+                  return;
+                }
+                onCartOpen();
+              }}
               className="relative hover:bg-gray-100"
             >
               <ShoppingBag className="h-6 w-6" />
-              {cartItemCount > 0 && (
+              {isAuthenticated() && cartItemCount > 0 && (
                 <span className="absolute -top-2 -right-2 bg-gray-900 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
                   {cartItemCount}
                 </span>

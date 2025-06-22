@@ -1,39 +1,189 @@
 import { useCart } from '../hooks/useCart';
-import CheckoutSavedList from '../components/CheckoutSavedList';
 import { useNavigate } from 'react-router-dom';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
-import { addToSavedList, SavedProduct } from '../services/savedListService';
-import { CheckCircle } from 'lucide-react';
+import Cart from '../components/Cart';
+import { CheckCircle, Loader2 } from 'lucide-react';
 import { toast } from '../hooks/use-toast';
 import CouponInput from '../components/CouponInput';
 import OrderSummary from '../components/OrderSummary';
 import CheckoutPaymentOptions from '../components/CheckoutPaymentOptions';
 import CheckoutAddressOptions from '../components/CheckoutAddressOptions';
 import CheckoutOrderDetails from '../components/CheckoutOrderDetails';
-import { CartItem } from '@/types/product';
+import { useAuth } from '../hooks/useAuth';
+import { orderService } from '../services/orderService';
+import { loadStripe } from '@stripe/stripe-js';
+
+// Payment method IDs
+const PAYMENT_METHODS = {
+  STRIPE: 1,
+  CASH_ON_DELIVERY: 2,
+} as const;
+
+// Initialize Stripe (you'll need to replace with your actual publishable key)
+const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || 'pk_test_your_publishable_key_here');
 
 const Checkout = () => {
-  const { cart, addToCart, removeFromCart, updateQuantity } = useCart();
-  const { items, total, itemCount } = cart;
+  const { items, total, itemCount, backendCart, fetchCartBackend, setProductQuantity, removeFromCartBackend } = useCart();
+  const { isAuthenticated } = useAuth();
   const [step, setStep] = useState(1);
   const [discount, setDiscount] = useState(0);
-  const [refreshSavedListKey, setRefreshSavedListKey] = useState(0);
+  const [isCartOpen, setIsCartOpen] = useState(false);
+  const [isProcessingPayment, setIsProcessingPayment] = useState(false);
   const navigate = useNavigate();
-
-
 
   const [selectedAddress, setSelectedAddress] = useState<number | null>(null);
   const [selectedPayment, setSelectedPayment] = useState<number | null>(null);
 
+  // Redirect to login if not authenticated
+  if (!isAuthenticated()) {
+    navigate('/login');
+    return null;
+  }
+
+  // Fetch cart from backend on component mount
+  useEffect(() => {
+    if (isAuthenticated) {
+      fetchCartBackend();
+    }
+  }, [isAuthenticated, fetchCartBackend]);
+
+  const handleUpdateQuantity = async (productId: string, quantity: number) => {
+    if (quantity < 1) {
+      // If quantity would be less than 1, remove the item instead
+      const cartItem = backendCart?.items.find(item => item.product.id.toString() === productId);
+      if (cartItem) {
+        await removeFromCartBackend(cartItem.id);
+      }
+      return;
+    }
+    
+    try {
+      await setProductQuantity(parseInt(productId), quantity);
+    } catch (error) {
+      console.error('Error updating quantity:', error);
+    }
+  };
+
+  const handleRemoveItem = (productId: string) => {
+    const cartItem = backendCart?.items.find(item => item.product.id.toString() === productId);
+    if (cartItem) {
+      removeFromCartBackend(cartItem.id);
+    }
+  };
+
+  const handleProceedToPayment = async () => {
+    if (!selectedAddress) {
+      toast({
+        title: "Address Required",
+        description: "Please select a shipping address.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    if (selectedPayment !== PAYMENT_METHODS.STRIPE) {
+      // Handle cash on delivery
+      toast({
+        title: "Order Confirmed",
+        description: "Your order has been placed successfully!",
+      });
+      navigate('/');
+      return;
+    }
+
+    setIsProcessingPayment(true);
+
+    try {
+      // Step 1: Finalize order with shipping address
+      toast({
+        title: "Processing",
+        description: "Finalizing your order...",
+      });
+      
+      const cartConfirmation = await orderService.finalizeOrder(selectedAddress);
+      
+      // Step 2: Try to create payment intent (with fallback)
+      try {
+        toast({
+          title: "Processing",
+          description: "Creating payment intent...",
+        });
+        
+        const paymentIntent = await orderService.createPaymentIntent(cartConfirmation.cartId);
+        
+        toast({
+          title: "Order Finalized",
+          description: "Your order has been finalized and payment intent created successfully!",
+        });
+      } catch (paymentError) {
+        console.warn('Payment intent creation failed, but order was finalized:', paymentError);
+        toast({
+          title: "Order Finalized",
+          description: "Your order has been finalized successfully! Payment processing will be handled separately.",
+        });
+      }
+      
+      // For now, redirect to home page
+      // In a real implementation, you would redirect to Stripe Checkout or handle the payment
+      setTimeout(() => {
+        toast({
+          title: "Order Placed",
+          description: "Your order has been placed successfully!",
+        });
+        navigate('/');
+      }, 2000);
+
+    } catch (error) {
+      console.error('Payment error:', error);
+      
+      let errorMessage = "Failed to process payment. Please try again.";
+      
+      if (error instanceof Error) {
+        if (error.message.includes('500')) {
+          errorMessage = "Server error. Please check your backend configuration.";
+        } else if (error.message.includes('401') || error.message.includes('403')) {
+          errorMessage = "Authentication error. Please login again.";
+        } else if (error.message.includes('404')) {
+          errorMessage = "Order not found. Please try again.";
+        } else {
+          errorMessage = error.message;
+        }
+      }
+      
+      toast({
+        title: "Payment Failed",
+        description: errorMessage,
+        variant: "destructive"
+      });
+    } finally {
+      setIsProcessingPayment(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
       <Header
-        onCartOpen={() => {}}
+        onCartOpen={() => setIsCartOpen(true)}
         cartItemCount={itemCount}
       />
+
+      <Cart
+        isOpen={isCartOpen}
+        onClose={() => setIsCartOpen(false)}
+        items={items}
+        total={total}
+        onRemoveItem={(productId) => {
+          // Find the cart item by product ID and remove it
+          const cartItem = backendCart?.items.find(item => item.product.id.toString() === productId);
+          if (cartItem) {
+            removeFromCartBackend(cartItem.id);
+          }
+        }}
+      />
+
       <main className="flex-1 w-2/3 mx-auto py-8 px-4 space-y-8 min-w-[340px] max-w-4xl">
         <h1 className="text-2xl font-bold mb-4">Checkout</h1>
         <div className="flex gap-8">
@@ -44,16 +194,10 @@ const Checkout = () => {
                <CheckoutOrderDetails
                   items={items}
                   total={total}
-                  updateQuantity={updateQuantity}
-                  removeFromCart={removeFromCart}
-                  addToSavedList={addToSavedList}
-                  onSavedListRefresh={() => setRefreshSavedListKey(k => k + 1)}
+                  updateQuantity={handleUpdateQuantity}
+                  removeFromCart={handleRemoveItem}
                   toast={toast}
                 />
-                <section className="bg-white rounded-2xl shadow-md p-6 mb-6">
-                  <h2 className="text-xl font-semibold mb-4">Saved List</h2>
-                  <CheckoutSavedList addToCart={addToCart} refreshKey={refreshSavedListKey} />
-                </section>
                 <Button
                   className="w-full bg-blue-600 text-white"
                   onClick={() => {
@@ -89,16 +233,16 @@ const Checkout = () => {
                 <Button
                   className="w-full bg-green-600 text-white flex items-center justify-center gap-2"
                   disabled={!selectedPayment || !selectedAddress}
-                  onClick={() => {
-                    toast({
-                      title: "Order Confirmed",
-                      description: "Your order has been placed successfully!",
-                    });
-                    navigate('/');
-                  }}
+                  onClick={handleProceedToPayment}
                 >
-                  <CheckCircle className="w-5 h-5" />
-                  Confirm Order
+                  {isProcessingPayment ? (
+                    <Loader2 className="animate-spin w-5 h-5" />
+                  ) : (
+                    <>
+                      <CheckCircle className="w-5 h-5" />
+                      {selectedPayment === PAYMENT_METHODS.STRIPE ? 'Proceed to Payment' : 'Confirm Order'}
+                    </>
+                  )}
                 </Button>
               </section>
             )}
@@ -118,7 +262,5 @@ const Checkout = () => {
     </div>
   );
 };
-
-
 
 export default Checkout;

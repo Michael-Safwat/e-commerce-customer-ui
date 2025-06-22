@@ -1,3 +1,5 @@
+import { CartProductPreview } from './product';
+
 export interface OrderProduct {
   id: number;
   productId: number;
@@ -9,29 +11,53 @@ export interface OrderProduct {
 
 export interface OrderDTO {
   id: number;
-  status: string;
+  userId: number;
+  items: OrderItemDTO[];
   totalPrice: number;
-  shippingAddress: string;
-  items: OrderProduct[];
-  createdAt: string; // ISO date string
+  status: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface OrderItemDTO {
+  id: number;
+  productId: number;
+  productName: string;
+  productImage: string;
+  price: number;
+  quantity: number;
+  subtotal: number;
 }
 
 export interface OrderPage {
   content: OrderDTO[];
-  totalElements: number;
   totalPages: number;
+  totalElements: number;
   size: number;
   number: number;
-  first: boolean;
-  last: boolean;
-  numberOfElements: number;
 }
 
 export interface OrderConfirmationRequest {
-  shippingAddress: string;
+  shippingAddressId: number;
 }
 
 export interface CartConfirmation {
-  // Add properties based on your CartConfirmation DTO
-  // This will be used for checkout confirmation
+  cartId: number;
+  userId: number;
+  items: CartProductPreview[];
+  totalPrice: number;
+  shippingAddress: ShippingAddressResponse;
+}
+
+export interface ShippingAddressResponse {
+  id: number;
+  street: string;
+  city: string;
+  state: string;
+  country: string;
+  zipCode: string;
+}
+
+export interface PaymentIntentResponse {
+  clientSecret: string;
 } 

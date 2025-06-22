@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Star, Plus, Minus, ShoppingBag, Heart, Loader2 } from 'lucide-react';
+import { ArrowLeft, Star, Plus, Minus, ShoppingBag, Loader2 } from 'lucide-react';
 import { useCart } from '../hooks/useCart';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -17,11 +17,9 @@ import { Product } from '../types/product';
 const ProductDetails = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { cart, addToCart } = useCart();
+  const { itemCount, items, total, backendCart, addToCartBackend, removeFromCartBackend, fetchCartBackend } = useCart();
   const { isAuthenticated } = useAuth();
   
-  const [selectedColor, setSelectedColor] = useState<string>('');
-  const [selectedSize, setSelectedSize] = useState<string>('');
   const [quantity, setQuantity] = useState(1);
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
@@ -29,6 +27,13 @@ const ProductDetails = () => {
   const [similarProducts, setSimilarProducts] = useState<Product[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  // Fetch cart from backend on component mount
+  useEffect(() => {
+    if (isAuthenticated) {
+      fetchCartBackend();
+    }
+  }, [isAuthenticated, fetchCartBackend]);
 
   // Fetch product details
   useEffect(() => {
@@ -92,7 +97,7 @@ const ProductDetails = () => {
     );
   }
 
-  const handleAddToCart = () => {
+  const handleAddToCart = async () => {
     if (!isAuthenticated) {
       toast({
         title: "Login required",
@@ -103,26 +108,22 @@ const ProductDetails = () => {
       return;
     }
 
-    if (product.colors && product.colors.length > 0 && !selectedColor) {
-      toast({
-        title: "Please select a color",
-        description: "You need to choose a color before adding to cart.",
-        variant: "destructive"
-      });
-      return;
-    }
-    
-    if (product.sizes && product.sizes.length > 0 && !selectedSize) {
-      toast({
-        title: "Please select a size",
-        description: "You need to choose a size before adding to cart.",
-        variant: "destructive"
-      });
-      return;
-    }
+    if (!product) return;
 
-    for (let i = 0; i < quantity; i++) {
-      addToCart(product, selectedColor, selectedSize);
+    try {
+      await addToCartBackend(parseInt(product.id), quantity);
+    } catch (error) {
+      console.error('Error adding to cart:', error);
+      
+      // Handle authentication errors by redirecting to login
+      if (error instanceof Error && error.message.includes('Authentication required')) {
+        toast({
+          title: "Login required",
+          description: "Please login to add items to your cart.",
+          variant: "destructive"
+        });
+        navigate('/login');
+      }
     }
   };
 
@@ -130,7 +131,7 @@ const ProductDetails = () => {
     <div className="min-h-screen bg-gray-50 flex flex-col">
       <Header 
         onCartOpen={() => setIsCartOpen(true)}
-        cartItemCount={cart.itemCount}
+        cartItemCount={itemCount}
         searchQuery={searchQuery}
         onSearchChange={setSearchQuery}
       />
@@ -138,13 +139,14 @@ const ProductDetails = () => {
       <Cart
         isOpen={isCartOpen}
         onClose={() => setIsCartOpen(false)}
-        items={cart.items}
-        total={cart.total}
-        onUpdateQuantity={(id, quantity, color, size) => {
-          // This will be handled by the cart hook
-        }}
-        onRemoveItem={(id, color, size) => {
-          // This will be handled by the cart hook
+        items={items}
+        total={total}
+        onRemoveItem={(productId) => {
+          // Find the cart item by product ID and remove it
+          const cartItem = backendCart?.items.find(item => item.product.id.toString() === productId);
+          if (cartItem) {
+            removeFromCartBackend(cartItem.id);
+          }
         }}
       />
 
@@ -196,50 +198,6 @@ const ProductDetails = () => {
                 <p className="text-gray-600 text-lg leading-relaxed">{product.description}</p>
               </div>
 
-              {/* Color Selection */}
-              {product.colors && product.colors.length > 0 && (
-                <div>
-                  <h3 className="text-lg font-medium text-gray-900 mb-3">Color</h3>
-                  <div className="flex gap-3">
-                    {product.colors.map((color) => (
-                      <button
-                        key={color}
-                        onClick={() => setSelectedColor(color)}
-                        className={`w-12 h-12 rounded-full border-2 transition-all ${
-                          selectedColor === color 
-                            ? 'border-gray-900 ring-2 ring-gray-900 ring-offset-2' 
-                            : 'border-gray-300 hover:border-gray-400'
-                        }`}
-                        style={{ backgroundColor: color.toLowerCase() }}
-                        title={color}
-                      />
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* Size Selection */}
-              {product.sizes && product.sizes.length > 0 && (
-                <div>
-                  <h3 className="text-lg font-medium text-gray-900 mb-3">Size</h3>
-                  <div className="grid grid-cols-4 gap-2">
-                    {product.sizes.map((size) => (
-                      <button
-                        key={size}
-                        onClick={() => setSelectedSize(size)}
-                        className={`py-3 px-4 text-center border rounded-lg transition-all ${
-                          selectedSize === size
-                            ? 'border-gray-900 bg-gray-900 text-white'
-                            : 'border-gray-300 hover:border-gray-400'
-                        }`}
-                      >
-                        {size}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              )}
-
               {/* Quantity */}
               <div>
                 <h3 className="text-lg font-medium text-gray-900 mb-3">Quantity</h3>
@@ -271,15 +229,6 @@ const ProductDetails = () => {
               >
                 <ShoppingBag className="h-5 w-5 mr-2" />
                 {product.inStock ? 'Add to Cart' : 'Out of Stock'}
-              </Button>
-
-              {/* Wishlist Button */}
-              <Button
-                variant="outline"
-                className="w-full border-gray-300 hover:border-gray-400"
-              >
-                <Heart className="h-5 w-5 mr-2" />
-                Add to Wishlist
               </Button>
             </div>
           </div>

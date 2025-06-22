@@ -21,7 +21,7 @@ const ResetPassword = () => {
     setError(null);
 
     if (!token) {
-      setError('No reset token found in the URL.');
+      navigate('/not-found');
       return;
     }
     if (password.length < 6) {
@@ -32,9 +32,11 @@ const ResetPassword = () => {
       setError('Passwords do not match.');
       return;
     }
+  
     setIsLoading(true);
     try {
       // Call backend API to reset password
+      window.history.replaceState({}, document.title, '/reset-password');
       await authService.resetPassword(token, password);
       
       setSuccess(true);
@@ -42,12 +44,24 @@ const ResetPassword = () => {
         title: 'Password reset successful!',
         description: 'You can now log in with your new password.',
       });
+
+      
+      
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Password reset failed. Please try again.';
-      setError(errorMessage);
+      if(errorMessage.includes("New password must be different from the old password"))
+      {
+        setError(errorMessage);
+      }
+      else if (errorMessage.includes("expired") || errorMessage.includes("Invalid")) {
+        navigate('/not-found');
+        return;
+      }
+      else {
+        setError(errorMessage);
+      }
       toast({
         title: 'Password reset failed',
-        description: errorMessage,
         variant: 'destructive',
       });
     } finally {

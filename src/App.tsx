@@ -15,6 +15,7 @@ import Checkout from "./pages/Checkout";
 import ResetPassword from "./pages/ResetPassword";
 import StripeCheckout from './pages/StripeCheckout';
 import StripeReturn from './pages/StripeReturn';
+import EmailVerification from "./pages/EmailVerification";
 import { useEffect } from "react";
 
 // Component to connect cart clearing with logout
@@ -51,6 +52,7 @@ const App = () => (
               <Route path="/checkout" element={<Checkout />} />
               <Route path="/stripe-checkout" element={<StripeCheckout />} />
               <Route path="/stripe-return" element={<StripeReturn />} />
+              <Route path="/users/verify" element={<EmailVerification />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
             </Routes>

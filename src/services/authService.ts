@@ -110,6 +110,10 @@ class AuthService {
           const responseText = await response.text();
           const lowerResponseText = responseText.toLowerCase();
 
+          if (lowerResponseText.includes("token")) {
+            throw new Error(responseText);
+          }
+
           if (lowerResponseText.includes("user not found")) {
             throw new Error("User not found");
           }
@@ -120,6 +124,12 @@ class AuthService {
 
           if (lowerResponseText.includes("full authentication is required")) {
             throw new Error("Full authentication is required to access this resource");
+          }
+          if (lowerResponseText.includes("Invalid token")) {
+            throw new Error("Invalid token");
+          }
+          if (lowerResponseText.includes("Tokenexpired")) {
+            throw new Error("Token expired");
           }
         }
 
@@ -140,11 +150,23 @@ class AuthService {
         if (response.status === 400) {
           const responseText = await response.text();
           console.log('400 response text:', responseText);
-          if (responseText.includes("Invalid")) {
+          const lowerResponseText = responseText.toLowerCase();
+
+          if (lowerResponseText.includes("token")) {
+            throw new Error(responseText);
+          }
+
+          if (responseText.includes("Invalid email address")) {
             throw new Error("Invalid email address");
           }
-        }
 
+          if (responseText.includes("New password must be different")) {
+            throw new Error("New password must be different from the old password");
+          }
+
+          // This is the important part: it handles any other 400 error
+          throw new Error(responseText || 'Bad Request');
+        }
 
         const errorData = await response.json().catch(() => ({}));
         throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
@@ -172,11 +194,13 @@ class AuthService {
     });
   }
 
-  async verifyUser(token: string): Promise<string> {
-    return this.makeRequest<string>(`/users/verify?token=${token}`, {
-      method: 'GET',
+  async verifyUser(token: string): Promise<void> {
+    await this.makeRequest<string>(`/users/verify`, {
+      method: 'POST',
+      body: JSON.stringify({ token: token }),
     });
   }
+  
 
   async loginUser(email: string, password: string): Promise<{ token: string }> {
     // For Basic Authentication, credentials are sent in a header.
@@ -235,16 +259,16 @@ class AuthService {
         headers: headers,
       });
 
-      console.log('=== DEBUG LOGIN RESPONSE ===');
-      console.log('Status:', response.status);
-      console.log('Status Text:', response.statusText);
-      console.log('Headers:', Object.fromEntries(response.headers.entries()));
+      // console.log('=== DEBUG LOGIN RESPONSE ===');
+      // console.log('Status:', response.status);
+      // console.log('Status Text:', response.statusText);
+      // console.log('Headers:', Object.fromEntries(response.headers.entries()));
       
-      const responseText = await response.text();
-      console.log('Response Body:', responseText);
-      console.log('Response Body Length:', responseText.length);
-      console.log('Response Body (hex):', Buffer.from(responseText).toString('hex'));
-      console.log('=== END DEBUG ===');
+      // const responseText = await response.text();
+      // console.log('Response Body:', responseText);
+      // console.log('Response Body Length:', responseText.length);
+      // console.log('Response Body (hex):', Buffer.from(responseText).toString('hex'));
+      // console.log('=== END DEBUG ===');
 
     } catch (error) {
       console.error('Debug request failed:', error);

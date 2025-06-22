@@ -43,9 +43,6 @@ const transformBackendToFrontend = (backendProduct: BackendProduct): FrontendPro
     inStock: backendProduct.stock > 0, // Convert stock to boolean
     rating: backendProduct.rating,
     reviews: Math.floor(Math.random() * 200) + 50, // Generate random reviews for now
-    // Optional fields
-    colors: ['Black', 'White'], // Default colors
-    sizes: ['S', 'M', 'L', 'XL'], // Default sizes
   };
 };
 

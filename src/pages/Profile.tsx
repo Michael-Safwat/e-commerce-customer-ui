@@ -2,20 +2,27 @@ import { useAuth } from '../hooks/useAuth';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 import { useCart } from '../hooks/useCart';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import AddressManager from '../components/AddressManager';
 import PasswordManager from '../components/PasswordManager';
 import BasicInfoManager from '../components/BasicInfoManager';
 import Orders from '../components/Orders';
-import SavedList from '../components/SavedList';
+import Cart from '../components/Cart';
 import { Loader2 } from 'lucide-react';
 import { Navigate } from 'react-router-dom';
 
 const Profile = () => {
-  const { cart } = useCart();
+  const { itemCount, items, total, backendCart, removeFromCartBackend, fetchCartBackend } = useCart();
   const { user, isAuthenticated, isLoading } = useAuth();
   const [isCartOpen, setIsCartOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState<'account' | 'orders' | 'saved'>('account');
+  const [activeTab, setActiveTab] = useState<'account' | 'orders'>('account');
+
+  // Fetch cart from backend on component mount
+  useEffect(() => {
+    if (isAuthenticated) {
+      fetchCartBackend();
+    }
+  }, [isAuthenticated, fetchCartBackend]);
 
   // Show loading state while auth is initializing
   if (isLoading) {
@@ -38,7 +45,21 @@ const Profile = () => {
     <div className="min-h-screen bg-gray-50 flex flex-col">
       <Header
         onCartOpen={() => setIsCartOpen(true)}
-        cartItemCount={cart.itemCount}
+        cartItemCount={itemCount}
+      />
+
+      <Cart
+        isOpen={isCartOpen}
+        onClose={() => setIsCartOpen(false)}
+        items={items}
+        total={total}
+        onRemoveItem={(productId) => {
+          // Find the cart item by product ID and remove it
+          const cartItem = backendCart?.items.find(item => item.product.id.toString() === productId);
+          if (cartItem) {
+            removeFromCartBackend(cartItem.id);
+          }
+        }}
       />
 
       <main className="flex-1 flex w-full max-w-5xl mx-auto py-12 px-4 gap-8">
@@ -65,16 +86,6 @@ const Profile = () => {
             >
               Orders
             </button>
-            <button
-              className={`text-left px-4 py-2 rounded-lg font-medium transition ${
-                activeTab === 'saved'
-                  ? 'bg-blue-600 text-white'
-                  : 'bg-white text-gray-900 hover:bg-blue-50'
-              }`}
-              onClick={() => setActiveTab('saved')}
-            >
-              Saved List
-            </button>
           </nav>
         </aside>
 
@@ -92,7 +103,6 @@ const Profile = () => {
             </>
           )}
           {activeTab === 'orders' && <Orders />}
-          {activeTab === 'saved' && <SavedList />}
         </div>
       </main>
 

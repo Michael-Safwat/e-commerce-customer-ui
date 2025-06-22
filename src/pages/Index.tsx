@@ -24,7 +24,6 @@ const PRODUCTS_PER_PAGE = 6;
 
 const Index = () => {
   const [selectedCategory, setSelectedCategory] = useState('all');
-  const [priceRange, setPriceRange] = useState<[number, number]>([0, 1000]);
   const [searchQuery, setSearchQuery] = useState('');
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [currentPage, setCurrentPage] = useState(0); // Backend uses 0-based pagination
@@ -34,9 +33,16 @@ const Index = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   
-  const { cart, addToCart, removeFromCart, updateQuantity } = useCart();
+  const { items, total, itemCount, backendCart, addToCartBackend, removeFromCartBackend, fetchCartBackend } = useCart();
   const { isAuthenticated } = useAuth();
   const navigate = useNavigate();
+
+  // Fetch cart from backend on component mount
+  useEffect(() => {
+    if (isAuthenticated) {
+      fetchCartBackend();
+    }
+  }, [isAuthenticated, fetchCartBackend]);
 
   // Fetch products from backend
   const fetchProducts = async () => {
@@ -90,19 +96,6 @@ const Index = () => {
     fetchProducts();
   }, [currentPage, selectedCategory, searchQuery]);
 
-  const handleAddToCart = (product: Product) => {
-    if (!isAuthenticated) {
-      toast({
-        title: "Login required",
-        description: "Please login to add items to your cart.",
-        variant: "destructive"
-      });
-      navigate('/login');
-      return;
-    }
-    addToCart(product);
-  };
-
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
   };
@@ -111,7 +104,7 @@ const Index = () => {
     <div className="min-h-screen bg-gray-50 flex flex-col">
       <Header
         onCartOpen={() => setIsCartOpen(true)}
-        cartItemCount={cart.itemCount}
+        cartItemCount={itemCount}
         searchQuery={searchQuery}
         onSearchChange={setSearchQuery}
       />
@@ -124,8 +117,6 @@ const Index = () => {
               <FilterSidebar
                 selectedCategory={selectedCategory}
                 onCategoryChange={setSelectedCategory}
-                priceRange={priceRange}
-                onPriceRangeChange={setPriceRange}
               />
             </div>
 
@@ -169,7 +160,6 @@ const Index = () => {
                     <ProductCard
                       key={product.id}
                       product={product}
-                      onAddToCart={handleAddToCart}
                     />
                   ))}
                 </div>
@@ -228,10 +218,15 @@ const Index = () => {
       <Cart
         isOpen={isCartOpen}
         onClose={() => setIsCartOpen(false)}
-        items={cart.items}
-        total={cart.total}
-        onUpdateQuantity={updateQuantity}
-        onRemoveItem={removeFromCart}
+        items={items}
+        total={total}
+        onRemoveItem={(productId) => {
+          // Find the cart item by product ID and remove it
+          const cartItem = backendCart?.items.find(item => item.product.id.toString() === productId);
+          if (cartItem) {
+            removeFromCartBackend(cartItem.id);
+          }
+        }}
       />
     </div>
   );

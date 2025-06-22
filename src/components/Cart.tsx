@@ -3,18 +3,46 @@ import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { CartItem } from '../types/product';
 import { useNavigate } from 'react-router-dom';
+import { useCart } from '../hooks/useCart';
 
 interface CartProps {
   isOpen: boolean;
   onClose: () => void;
   items: CartItem[];
   total: number;
-  onUpdateQuantity: (productId: string, quantity: number, selectedColor?: string, selectedSize?: string) => void;
-  onRemoveItem: (productId: string, selectedColor?: string, selectedSize?: string) => void;
+  onRemoveItem: (productId: string) => void;
 }
 
-const Cart = ({ isOpen, onClose, items, total, onUpdateQuantity, onRemoveItem }: CartProps) => {
+const Cart = ({ isOpen, onClose, items, total, onRemoveItem }: CartProps) => {
   const navigate = useNavigate();
+  const { setProductQuantity, removeProductFromCart, isLoading } = useCart();
+
+  const handleQuantityUpdate = async (productId: string, newQuantity: number) => {
+    if (newQuantity < 1) {
+      // If quantity would be less than 1, remove the item by setting quantity to 0
+      try {
+        await removeProductFromCart(parseInt(productId));
+      } catch (error) {
+        console.error('Error removing item from cart:', error);
+      }
+      return;
+    }
+    
+    try {
+      await setProductQuantity(parseInt(productId), newQuantity);
+    } catch (error) {
+      console.error('Error updating quantity:', error);
+    }
+  };
+
+  const handleRemoveItem = async (productId: string) => {
+    try {
+      // Remove item by setting quantity to 0 (backend will remove it)
+      await removeProductFromCart(parseInt(productId));
+    } catch (error) {
+      console.error('Error removing item from cart:', error);
+    }
+  };
 
   if (!isOpen) return null;
 
@@ -42,7 +70,7 @@ const Cart = ({ isOpen, onClose, items, total, onUpdateQuantity, onRemoveItem }:
             ) : (
               <div className="space-y-4">
                 {items.map((item) => (
-                  <div key={`${item.id}-${item.selectedColor}-${item.selectedSize}`} className="flex gap-4">
+                  <div key={item.id} className="flex gap-4">
                     <img
                       src={item.image}
                       alt={item.name}
@@ -50,19 +78,14 @@ const Cart = ({ isOpen, onClose, items, total, onUpdateQuantity, onRemoveItem }:
                     />
                     <div className="flex-1">
                       <h3 className="font-medium text-gray-900">{item.name}</h3>
-                      {item.selectedColor && (
-                        <p className="text-sm text-gray-600">Color: {item.selectedColor}</p>
-                      )}
-                      {item.selectedSize && (
-                        <p className="text-sm text-gray-600">Size: {item.selectedSize}</p>
-                      )}
                       <div className="flex items-center justify-between mt-2">
                         <div className="flex items-center gap-2">
                           <Button
                             variant="outline"
                             size="icon"
                             className="h-8 w-8"
-                            onClick={() => onUpdateQuantity(item.id, item.quantity - 1, item.selectedColor, item.selectedSize)}
+                            disabled={isLoading}
+                            onClick={() => handleQuantityUpdate(item.id, item.quantity - 1)}
                           >
                             <Minus className="h-3 w-3" />
                           </Button>
@@ -71,7 +94,8 @@ const Cart = ({ isOpen, onClose, items, total, onUpdateQuantity, onRemoveItem }:
                             variant="outline"
                             size="icon"
                             className="h-8 w-8"
-                            onClick={() => onUpdateQuantity(item.id, item.quantity + 1, item.selectedColor, item.selectedSize)}
+                            disabled={isLoading}
+                            onClick={() => handleQuantityUpdate(item.id, item.quantity + 1)}
                           >
                             <Plus className="h-3 w-3" />
                           </Button>
@@ -79,7 +103,8 @@ const Cart = ({ isOpen, onClose, items, total, onUpdateQuantity, onRemoveItem }:
                         <Button
                           variant="ghost"
                           size="sm"
-                          onClick={() => onRemoveItem(item.id, item.selectedColor, item.selectedSize)}
+                          disabled={isLoading}
+                          onClick={() => handleRemoveItem(item.id)}
                           className="text-red-600 hover:text-red-700"
                         >
                           Remove
@@ -102,6 +127,7 @@ const Cart = ({ isOpen, onClose, items, total, onUpdateQuantity, onRemoveItem }:
               </div>
               <Button
                 className="w-full bg-gray-900 hover:bg-gray-800 text-white"
+                disabled={isLoading}
                 onClick={() => {
                   onClose();
                   navigate('/checkout');

@@ -121,8 +121,9 @@ class OrderService {
   // Create payment intent for Stripe
   async createPaymentIntent(orderId: number): Promise<PaymentIntentResponse> {
     const userId = this.getUserIdFromToken();
-    return this.makeRequest<PaymentIntentResponse>(`/users/${userId}/pay/${orderId}`, {
+    return this.makeRequest<PaymentIntentResponse>(`/users/${userId}/pay`, {
       method: 'POST',
+      body: JSON.stringify({ orderId }),
     });
   }
 }

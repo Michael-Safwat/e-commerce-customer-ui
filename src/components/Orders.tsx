@@ -14,15 +14,9 @@ const Orders: React.FC = () => {
   const [hasMore, setHasMore] = useState(true);
 
   const fetchOrders = async (page: number = 0) => {
-    if (!user?.id) {
-      setError('User not authenticated');
-      setLoading(false);
-      return;
-    }
-
     try {
       setLoading(true);
-      const response = await orderService.getUserOrders(user.id, page, 10);
+      const response = await orderService.getAllOrders(page, 10);
       setOrders(prev => page === 0 ? response.content : [...prev, ...response.content]);
       setHasMore(!response.last);
       setCurrentPage(page);
@@ -41,7 +35,7 @@ const Orders: React.FC = () => {
 
   useEffect(() => {
     fetchOrders(0);
-  }, [user?.id]);
+  }, []);
 
   const loadMore = () => {
     if (!loading && hasMore) {
@@ -133,7 +127,7 @@ const Orders: React.FC = () => {
               </div>
               <div className="text-right">
                 <div className="font-bold text-xl text-gray-900">
-                  ${order.totalPrice.toFixed(2)}
+                  ${typeof order.totalPrice === 'number' ? order.totalPrice.toFixed(2) : '0.00'}
                 </div>
                 <span className={`inline-block px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(order.status)}`}>
                   {order.status}
@@ -154,8 +148,8 @@ const Orders: React.FC = () => {
                 {order.items.map((item) => (
                   <div key={item.id} className="flex items-center space-x-3">
                     <img 
-                      src={item.productImage} 
-                      alt={item.productName}
+                      src={item.product?.image} 
+                      alt={item.product?.name}
                       className="w-12 h-12 object-cover rounded-lg"
                       onError={(e) => {
                         const target = e.target as HTMLImageElement;
@@ -163,12 +157,15 @@ const Orders: React.FC = () => {
                       }}
                     />
                     <div className="flex-1 min-w-0">
-                      <p className="font-medium text-gray-900 truncate">{item.productName}</p>
+                      <p className="font-medium text-gray-900 truncate">{item.product?.name}</p>
+                      {item.product?.description && (
+                        <p className="text-xs text-gray-500 truncate">{item.product.description}</p>
+                      )}
                       <p className="text-sm text-gray-500">Qty: {item.quantity}</p>
                     </div>
                     <div className="text-right">
-                      <p className="font-medium text-gray-900">${item.price.toFixed(2)}</p>
-                      <p className="text-sm text-gray-500">${(item.price * item.quantity).toFixed(2)}</p>
+                      <p className="font-medium text-gray-900">${typeof item.product?.price === 'number' ? item.product.price.toFixed(2) : '0.00'}</p>
+                      <p className="text-sm text-gray-500">${typeof item.product?.price === 'number' && typeof item.quantity === 'number' ? (item.product.price * item.quantity).toFixed(2) : '0.00'}</p>
                     </div>
                   </div>
                 ))}

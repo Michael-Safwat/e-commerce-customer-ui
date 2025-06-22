@@ -1,5 +1,4 @@
 import { Button } from '@/components/ui/button';
-import { SavedProduct } from '@/services/savedListService';
 
 interface Item {
   id: string | number;
@@ -7,8 +6,6 @@ interface Item {
   image: string;
   quantity: number;
   price: number;
-  selectedColor?: string;
-  selectedSize?: string;
   [key: string]: any;
 }
 
@@ -17,17 +14,11 @@ interface CheckoutOrderDetailsProps {
   total: number;
   updateQuantity: (
     id: string | number,
-    quantity: number,
-    color?: string,
-    size?: string
+    quantity: number
   ) => void;
   removeFromCart: (
-    id: string | number,
-    color?: string,
-    size?: string
+    id: string | number
   ) => void;
-  addToSavedList: (item: SavedProduct) => Promise<void>;
-  onSavedListRefresh: () => void;
   toast: (args: { title: string; description: string }) => void;
 }
 
@@ -36,8 +27,6 @@ const CheckoutOrderDetails = ({
   total,
   updateQuantity,
   removeFromCart,
-  addToSavedList,
-  onSavedListRefresh,
   toast,
 }: CheckoutOrderDetailsProps) => (
   <section className="bg-white rounded-2xl shadow-md p-6 mb-6">
@@ -52,13 +41,13 @@ const CheckoutOrderDetails = ({
               Qty:
               <button
                 className="px-2 py-1 border rounded disabled:opacity-50"
-                onClick={() => updateQuantity(item.id, item.quantity - 1, item.selectedColor, item.selectedSize)}
+                onClick={() => updateQuantity(item.id, item.quantity - 1)}
                 disabled={item.quantity <= 1}
               >-</button>
               <span className="mx-2">{item.quantity}</span>
               <button
                 className="px-2 py-1 border rounded"
-                onClick={() => updateQuantity(item.id, item.quantity + 1, item.selectedColor, item.selectedSize)}
+                onClick={() => updateQuantity(item.id, item.quantity + 1)}
               >+</button>
             </div>
             <div className="text-sm text-gray-500">Price: ${item.price.toFixed(2)}</div>
@@ -67,24 +56,9 @@ const CheckoutOrderDetails = ({
             <Button
               variant="outline"
               className="text-red-600 border-red-200 hover:bg-red-50"
-              onClick={() => removeFromCart(item.id, item.selectedColor, item.selectedSize)}
+              onClick={() => removeFromCart(item.id)}
             >
               Delete
-            </Button>
-            <Button
-              variant="outline"
-              className="text-blue-600 border-blue-200 hover:bg-blue-50"
-              onClick={async () => {
-                await addToSavedList(item);
-                removeFromCart(item.id, item.selectedColor, item.selectedSize);
-                onSavedListRefresh();
-                toast({
-                  title: "Saved for later",
-                  description: `${item.name} has been moved to your saved list.`,
-                });
-              }}
-            >
-              Save for later
             </Button>
           </div>
         </div>

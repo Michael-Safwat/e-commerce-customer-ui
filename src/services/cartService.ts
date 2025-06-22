@@ -1,7 +1,13 @@
 import { API_CONFIG } from '@/config/api';
-import { OrderDTO, OrderPage, OrderConfirmationRequest, CartConfirmation, PaymentIntentResponse } from '@/types/order';
+import { AddToCartRequest, CartProductPreview, CartPreview } from '@/types/product';
 
-class OrderService {
+// Add the CartRequest interface to match the backend
+export interface CartRequest {
+  productId: number;
+  quantity: number;
+}
+
+class CartService {
   private getAuthHeaders(): HeadersInit {
     const token = localStorage.getItem('token') || localStorage.getItem('userToken');
     return {
@@ -51,7 +57,7 @@ class OrderService {
       // For non-JSON responses, return empty object
       return {} as T;
     } catch (error) {
-      console.error('Order API request failed:', error);
+      console.error('Cart API request failed:', error);
       throw error;
     }
   }
@@ -96,35 +102,71 @@ class OrderService {
     }
   }
 
-  // Get all orders for a user
-  async getAllOrders(page: number = 0, size: number = 10): Promise<OrderPage> {
+  // Add product to cart
+  async addToCart(request: AddToCartRequest): Promise<CartPreview> {
     const userId = this.getUserIdFromToken();
-    return this.makeRequest<OrderPage>(`/users/${userId}/orders?page=${page}&size=${size}`);
-  }
-
-  // Get a specific order by ID
-  async getOrderById(orderId: number): Promise<OrderDTO> {
-    const userId = this.getUserIdFromToken();
-    return this.makeRequest<OrderDTO>(`/users/${userId}/orders/${orderId}`);
-  }
-
-  // Finalize order with shipping address
-  async finalizeOrder(shippingAddressId: number): Promise<CartConfirmation> {
-    const userId = this.getUserIdFromToken();
-    const request: OrderConfirmationRequest = { shippingAddressId };
-    return this.makeRequest<CartConfirmation>(`/users/${userId}/orders/finalizeOrder`, {
+    return this.makeRequest<CartPreview>(`/users/${userId}/cart`, {
       method: 'POST',
       body: JSON.stringify(request),
     });
   }
 
-  // Create payment intent for Stripe
-  async createPaymentIntent(orderId: number): Promise<PaymentIntentResponse> {
+  // Get cart preview
+  async getCartPreview(): Promise<CartPreview | null> {
     const userId = this.getUserIdFromToken();
-    return this.makeRequest<PaymentIntentResponse>(`/users/${userId}/pay/${orderId}`, {
-      method: 'POST',
+    try {
+      return await this.makeRequest<CartPreview>(`/users/${userId}/cart`);
+    } catch (error) {
+      // Handle the case where backend returns "Your cart is empty"
+      if (error instanceof Error && error.message.includes('Your cart is empty')) {
+        return null; // Return null to indicate empty cart
+      }
+      throw error; // Re-throw other errors
+    }
+  }
+
+  // Update cart item quantity - using PATCH endpoint as per backend
+  async setProductQuantity(productId: number, quantity: number): Promise<CartPreview> {
+    const userId = this.getUserIdFromToken();
+    const request: CartRequest = { productId, quantity };
+    return this.makeRequest<CartPreview>(`/users/${userId}/cart`, {
+      method: 'PATCH',
+      body: JSON.stringify(request),
+    });
+  }
+
+  // Remove product from cart by setting quantity to 0
+  async removeProductFromCart(productId: number): Promise<CartPreview> {
+    return this.setProductQuantity(productId, 0);
+  }
+
+  // Legacy method for backward compatibility
+  async updateCartItemQuantity(itemId: number, quantity: number): Promise<CartPreview> {
+    // This method is kept for backward compatibility but now uses the new API
+    // We need to find the product ID from the cart item ID
+    const cart = await this.getCartPreview();
+    const cartItem = cart.items.find(item => item.id === itemId);
+    if (!cartItem) {
+      throw new Error('Cart item not found');
+    }
+    return this.setProductQuantity(parseInt(cartItem.product.id), quantity);
+  }
+
+  // Remove item from cart
+  async removeFromCart(itemId: number): Promise<void> {
+    const userId = this.getUserIdFromToken();
+    return this.makeRequest<void>(`/users/${userId}/cart/items/${itemId}`, {
+      method: 'DELETE',
+    });
+  }
+
+  // Clear cart
+  async clearCart(): Promise<void> {
+    const userId = this.getUserIdFromToken();
+    return this.makeRequest<void>(`/users/${userId}/cart`, {
+      method: 'DELETE',
     });
   }
 }
 
-export const orderService = new OrderService(); 
+export const cartService = new CartService(); 

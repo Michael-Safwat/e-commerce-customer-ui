@@ -1,4 +1,4 @@
-import { Search, ShoppingBag, User, LogOut } from 'lucide-react';
+import { Search, ShoppingBag, User, LogOut, Key } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -7,8 +7,10 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
+  DropdownMenuSeparator,
 } from '@/components/ui/dropdown-menu';
 import { useAuth } from '../hooks/useAuth';
+import { toast } from '../hooks/use-toast';
 
 interface HeaderProps {
   onCartOpen: () => void;
@@ -18,7 +20,7 @@ interface HeaderProps {
 }
 
 const Header = ({ onCartOpen, cartItemCount, searchQuery, onSearchChange }: HeaderProps) => {
-  const { user, logout, isLoggedIn } = useAuth();
+  const { user, logout, isAuthenticated } = useAuth();
   const navigate = useNavigate();
 
   const handleLogout = () => {
@@ -56,47 +58,69 @@ const Header = ({ onCartOpen, cartItemCount, searchQuery, onSearchChange }: Head
           {/* Right Section */}
           <div className="flex items-center space-x-4">
             {/* User Menu */}
-            {isLoggedIn ? (
+            {isAuthenticated() ? (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="icon" className="relative">
+                  <Button variant="ghost" size="icon" className="relative hover:bg-gray-100">
                     <User className="h-6 w-6" />
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
+                <DropdownMenuContent align="end" className="w-56">
                   <DropdownMenuItem
                     className="flex items-center gap-2 cursor-pointer"
                     onClick={() => navigate('/profile')}
                   >
                     <User className="h-4 w-4" />
-                    {user?.email}
+                    <div className="flex flex-col">
+                      <span className="font-medium">{user?.name || 'User'}</span>
+                      <span className="text-sm text-gray-500">{user?.email}</span>
+                    </div>
                   </DropdownMenuItem>
-                  <DropdownMenuItem onClick={handleLogout} className="flex items-center gap-2">
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={handleLogout} className="flex items-center gap-2 text-red-600 hover:text-red-700">
                     <LogOut className="h-4 w-4" />
                     Logout
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
             ) : (
-              <div className="flex items-center space-x-2">
-                <Button variant="ghost" asChild>
-                  <Link to="/login">Login</Link>
-                </Button>
-                <Button variant="outline" asChild>
-                  <Link to="/register">Register</Link>
-                </Button>
-              </div>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="icon" className="relative hover:bg-gray-100">
+                    <User className="h-6 w-6" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-32">
+                  <DropdownMenuItem asChild>
+                    <Link to="/login" className="flex items-center gap-2 cursor-pointer">
+                      <Key className="h-4 w-4" />
+                      Login
+                    </Link>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             )}
 
             {/* Cart Button */}
             <Button
               variant="ghost"
               size="icon"
-              onClick={onCartOpen}
+              onClick={() => {
+                if (!isAuthenticated()) {
+                  toast({
+                    title: "Login required",
+                    description: "Please login to view your cart.",
+                    variant: "destructive"
+                  });
+                  navigate('/login');
+                  return;
+                }
+                onCartOpen();
+              }}
               className="relative hover:bg-gray-100"
             >
               <ShoppingBag className="h-6 w-6" />
-              {cartItemCount > 0 && (
+              {isAuthenticated() && cartItemCount > 0 && (
                 <span className="absolute -top-2 -right-2 bg-gray-900 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
                   {cartItemCount}
                 </span>

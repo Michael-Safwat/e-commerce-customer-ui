@@ -21,6 +21,16 @@ const EmailVerification = () => {
     }
   }, [token]);
 
+  useEffect(() => {
+    if (isVerified) {
+      const timer = setTimeout(() => {
+        navigate('/login');
+      }, 5000); // Redirect to login after 5 seconds
+
+      return () => clearTimeout(timer); // Cleanup timer on component unmount
+    }
+  }, [isVerified, navigate]);
+
   const verifyEmail = async () => {
     if (!token) return;
 
@@ -34,6 +44,8 @@ const EmailVerification = () => {
         title: "Email verified successfully!",
         description: "Your account has been verified. You can now log in.",
       });
+      window.history.replaceState({}, document.title, '/verify-email');
+
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Verification failed. Please try again.';
       setError(errorMessage);

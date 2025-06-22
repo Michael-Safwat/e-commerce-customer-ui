@@ -105,37 +105,9 @@ const Checkout = () => {
       
       const cartConfirmation = await orderService.finalizeOrder(selectedAddress);
       
-      // Step 2: Try to create payment intent (with fallback)
-      try {
-        toast({
-          title: "Processing",
-          description: "Creating payment intent...",
-        });
-        
-        const paymentIntent = await orderService.createPaymentIntent(cartConfirmation.cartId);
-        
-        toast({
-          title: "Order Finalized",
-          description: "Your order has been finalized and payment intent created successfully!",
-        });
-      } catch (paymentError) {
-        console.warn('Payment intent creation failed, but order was finalized:', paymentError);
-        toast({
-          title: "Order Finalized",
-          description: "Your order has been finalized successfully! Payment processing will be handled separately.",
-        });
-      }
-      
-      // For now, redirect to home page
-      // In a real implementation, you would redirect to Stripe Checkout or handle the payment
-      setTimeout(() => {
-        toast({
-          title: "Order Placed",
-          description: "Your order has been placed successfully!",
-        });
-        navigate('/');
-      }, 2000);
-
+      // Redirect to Stripe checkout page with orderId
+      navigate(`/stripe-checkout?orderId=${encodeURIComponent(cartConfirmation.cartId)}`);
+      return;
     } catch (error) {
       console.error('Payment error:', error);
       

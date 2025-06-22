@@ -32,6 +32,7 @@ const ResetPassword = () => {
       setError('Passwords do not match.');
       return;
     }
+  
     setIsLoading(true);
     try {
       // Call backend API to reset password
@@ -42,12 +43,19 @@ const ResetPassword = () => {
         title: 'Password reset successful!',
         description: 'You can now log in with your new password.',
       });
+      window.history.replaceState({}, document.title, '/reset-password');
+
+      
+      
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Password reset failed. Please try again.';
-      setError(errorMessage);
+      if (errorMessage.includes("expired") || errorMessage.includes("invalid")) {
+        setError(errorMessage);
+        setTimeout(() => navigate('/login'), 3000);
+      }
+      // setError(errorMessage);
       toast({
         title: 'Password reset failed',
-        description: errorMessage,
         variant: 'destructive',
       });
     } finally {

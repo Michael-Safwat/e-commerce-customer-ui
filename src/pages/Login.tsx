@@ -99,8 +99,8 @@ const Login = () => {
       // Call backend to send reset link
       await authService.reactivate(email);
       toast({
-        title: "Password Reset Link Sent",
-        description: "A password reset link has been sent to your email address.",
+        title: "Password Reset Link",
+        description: "If an account with that email exists, a reset password link has been sent.",
       });
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : "Failed to send password reset link.";
@@ -128,8 +128,8 @@ const Login = () => {
       // Call backend to send reset link
       await authService.reactivate(email);
       toast({
-        title: "Password Reset Link Sent",
-        description: "A password reset link has been sent to your email address.",
+        title: "Password Reset Link",
+        description: "If an account with that email exists, a reset password link has been sent.",
       });
       setIsForgotPassword(false);
     } catch (error) {

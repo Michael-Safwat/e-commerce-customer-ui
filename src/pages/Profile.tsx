@@ -95,10 +95,6 @@ const Profile = () => {
             <>
               <BasicInfoManager />
               <AddressManager />
-              <section className="bg-white rounded-2xl shadow-md p-6 space-y-4">
-                <h2 className="text-xl font-semibold text-gray-900">Payment Methods</h2>
-                <div className="text-gray-600">No payment methods added yet.</div>
-              </section>
               <PasswordManager />
             </>
           )}

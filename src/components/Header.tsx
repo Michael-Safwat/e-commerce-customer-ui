@@ -84,21 +84,14 @@ const Header = ({ onCartOpen, cartItemCount, searchQuery, onSearchChange }: Head
                 </DropdownMenuContent>
               </DropdownMenu>
             ) : (
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="icon" className="relative hover:bg-gray-100">
-                    <User className="h-6 w-6" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-32">
-                  <DropdownMenuItem asChild>
-                    <Link to="/login" className="flex items-center gap-2 cursor-pointer">
-                      <Key className="h-4 w-4" />
-                      Login
-                    </Link>
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
+              <div className="flex items-center space-x-2">
+                <Button variant="ghost" asChild>
+                  <Link to="/login">Login</Link>
+                </Button>
+                <Button asChild>
+                  <Link to="/register">Register</Link>
+                </Button>
+              </div>
             )}
 
             {/* Cart Button */}

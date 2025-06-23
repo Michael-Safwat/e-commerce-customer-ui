@@ -144,24 +144,6 @@ const Login = () => {
     }
   };
 
-  const handleDebugLogin = async () => {
-    if (!email || !password) {
-      toast({
-        title: "Email and password required",
-        description: "Please enter both email and password for debugging.",
-        variant: "destructive",
-      });
-      return;
-    }
-    
-    console.log('=== DEBUGGING LOGIN RESPONSE ===');
-    await authService.debugLoginResponse(email, password);
-    toast({
-      title: "Debug Complete",
-      description: "Check the browser console for detailed response information.",
-    });
-  };
-
   return (
     <div
       className="min-h-screen flex items-center justify-center relative"
@@ -253,15 +235,6 @@ const Login = () => {
                 className="text-sm text-blue-600 hover:underline"
               >
                 Forgot your password?
-              </button>
-            </div>
-            <div className="text-center">
-              <button
-                type="button"
-                onClick={handleDebugLogin}
-                className="text-xs text-gray-500 hover:underline"
-              >
-                Debug Login Response
               </button>
             </div>
           </form>
